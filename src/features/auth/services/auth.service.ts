@@ -1,3 +1,6 @@
+'use server';
+
+import { cookies } from 'next/headers';
 import { LoginResponse, BadLoginResponse, LoginParams, SignUpParams, SignUpResponse } from '../schemas';
 
 export const loginWithCredentials = async ({ email, username, password }: LoginParams): Promise<LoginResponse> => {
@@ -21,6 +24,22 @@ export const loginWithCredentials = async ({ email, username, password }: LoginP
   }
 
   const data = await response.json();
+
+  const cookieStore = await cookies();
+  
+  cookieStore.set('access', data.access, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    path: '/',
+  });
+  
+  cookieStore.set('refresh', data.refresh, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    path: '/',
+  });
 
   return {
     token: data,

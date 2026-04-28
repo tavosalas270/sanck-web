@@ -4,6 +4,7 @@ import { LoginFormValues, LoginParams, SignUpParams } from '../schemas';
 import { useSignUpContext } from '../context';
 
 export const useLogin = () => {
+
   return useMutation({
     mutationFn: (data: LoginFormValues) => {
       const { identifier, password } = data;
@@ -15,9 +16,6 @@ export const useLogin = () => {
       };
 
       return loginWithCredentials(loginParams);
-    },
-    onSuccess: (data) => {
-      console.log('Login succesful, token:', data.token);
     },
     onError: (error) => {
       console.error('Login failed:', error.message);

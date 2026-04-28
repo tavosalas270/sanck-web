@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, LoginFormValues } from '../schemas';
@@ -9,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
 export const LoginForm = () => {
+  const router = useRouter();
   const { mutate: login, isPending, isError, error } = useLogin();
 
   const {
@@ -24,7 +26,11 @@ export const LoginForm = () => {
   });
 
   const onSubmit = (data: LoginFormValues) => {
-    login(data);
+    login(data, {
+      onSuccess: () => {
+        router.push('/watch');
+      }
+    });
   };
 
   return (
