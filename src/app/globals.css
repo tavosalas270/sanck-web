@@ -148,4 +148,18 @@
   --color-primary: var(--color-snak-pink);
   --color-secondary: var(--color-snak-purple-medium);
   --color-background: var(--color-snak-purple-dark);
+
+  /* Animaciones personalizadas */
+  --animate-marquee: marquee 15s linear infinite;
+  --animate-spin-slow: spin 4s linear infinite;
+
+  @keyframes marquee {
+    from { transform: translateX(100%); }
+    to { transform: translateX(-100%); }
+  }
+}
+
+/* Estilos para que el video de react-player cubra toda la pantalla */
+.react-player video {
+  object-fit: cover;
 }
