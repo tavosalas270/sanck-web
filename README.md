@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Snack - Frontend Web
 
-## Getting Started
+Este repositorio contiene el código fuente del frontend web para **Snack**, una red social centrada en el streaming de videos y series, compra por medio de tokens, comentarios, reacciones y caracteristicas sociales avanzadas.
 
-First, run the development server:
+## 🛠️ Stack Tecnológico
+
+*   **Framework:** [Next.js](https://nextjs.org/) (App Router exclusivo)
+*   **Lenguaje:** [TypeScript](https://www.typescriptlang.org/)
+*   **Estilos:** [Tailwind CSS v4](https://tailwindcss.com/) (Configuración vía `@theme` en CSS)
+*   **Componentes UI:** [shadcn/ui](https://ui.shadcn.com/) (Radix UI)
+*   **Gestión de Datos:** [TanStack Query v5](https://tanstack.com/query/latest)
+*   **Formularios:** [React Hook Form](https://react-hook-form.com/) & [Zod](https://zod.dev/)
+*   **Iconografía:** [Lucide React](https://lucide.dev/) & [OpenMoji](https://openmoji.org/)
+*   **Gestor de Paquetes:** [pnpm](https://pnpm.io/)
+
+
+## 🏗️ Arquitectura
+
+El proyecto sigue una **Arquitectura basada en Feature (Feature-based Architecture)**. En lugar de organizar el código solo por tipos de archivos (hooks, componentes, etc.), lo organizamos por módulos funcionales. 
+
+Cada módulo dentro de la carpeta `components/` encapsula su propia lógica:
+*   **`components/`**: UI específica del módulo.
+*   **`hooks/`**: Lógica de estado y efectos propia de la feature.
+*   **`services/`**: Llamadas a API y lógica de negocio.
+*   **`schemas/`**: Definiciones de TypeScript para el módulo.
+
+Esta estructura permite que el proyecto sea más escalable, fácil de testear y que los equipos trabajen en paralelo de forma más eficiente.
+
+Adicionalmente, implementamos **archivos de barril (barrel files)** mediante archivos `index.ts` en cada subdirectorio. Esto garantiza importaciones más limpias, organizadas y fáciles de mantener al centralizar las exportaciones de cada módulo.
+
+
+## 🚀 Guía de Instalación y Uso
+
+Sigue estos pasos para configurar y ejecutar el proyecto localmente.
+
+### 📋 Requisitos Previos
+
+Antes de comenzar, asegúrate de cumplir con lo siguiente:
+*   **Backend:** El servidor backend debe estar en funcionamiento. Puede estar corriendo localmente o estar ya desplegado en un servidor.
+*   **Node.js:** Tener instalado Node.js **v24.14.0** o superior.
+
+### 1. Instalación de dependencias
+
+Ejecuta el siguiente comando en la raíz del proyecto:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🚀 Comenzando
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Para ejecutar el servidor de desarrollo:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+pnpm run dev
+```
+Finalmente, abrir la URL en el navegador: [http://localhost:3000](http://localhost:3000)
