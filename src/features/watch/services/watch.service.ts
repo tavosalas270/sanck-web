@@ -72,7 +72,7 @@ export const postPayVideo = async (videoId: string): Promise<any> => {
 };
 
 export const getUserData = async (): Promise<UserTokenData> => {
-    const response = await fetchApi('/api/user/me/', 'GET');
+    const response = await fetchApi('/api/users/me/', 'GET');
 
     if (!response.ok) {
         throw { status: response.status };
