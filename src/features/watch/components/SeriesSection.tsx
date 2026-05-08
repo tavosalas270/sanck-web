@@ -1,9 +1,13 @@
 "use client"
 
+import { useState, useMemo } from "react";
 import Image from "next/image";
 import { Series, Videos } from "../schemas";
 import { formatUrl } from "@/lib/utils";
 import { EpisodeCard } from "./EpisodeCard";
+import { useVideos } from "../hooks/useWatch";
+import { Button } from "@/components/ui/button";
+import { ChevronRight, Loader2 } from "lucide-react";
 
 interface SeriesSectionProps {
     series: Series;
@@ -11,6 +15,26 @@ interface SeriesSectionProps {
 }
 
 export const SeriesSection = ({ series, onEpisodeClick }: SeriesSectionProps) => {
+    const [loadMore, setLoadMore] = useState(false);
+    const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useVideos(series.id, 2, loadMore);
+
+    const handleLoadMore = () => {
+        if (!loadMore) {
+            setLoadMore(true);
+        } else {
+            fetchNextPage();
+        }
+    };
+
+    // Combinar los videos iniciales de la serie con los obtenidos por el hook de scroll infinito
+    const extraVideos = useMemo(() => data?.pages.flat() || [], [data]);
+    const allVideos = useMemo(() => [...series.videos, ...extraVideos], [series.videos, extraVideos]);
+
+    // Lógica para mostrar la flecha:
+    // 1. La serie inicial debe tener al menos 5 para permitir cargar más.
+    // 2. Si ya empezamos a cargar, mostrar solo si hay una página siguiente disponible.
+    const canShowMore = series.videos.length >= 5 && (!loadMore || hasNextPage);
+
     return (
         <section className="w-full space-y-6 mb-12 last:mb-0">
             {/* Poster and Title Section */}
@@ -41,15 +65,32 @@ export const SeriesSection = ({ series, onEpisodeClick }: SeriesSectionProps) =>
                     </h3>
                 </div>
 
-                <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
-                    {series.videos.length > 0 ? (
-                        series.videos.map((video) => (
-                            <EpisodeCard
-                                key={video.id}
-                                video={video}
-                                onClick={onEpisodeClick}
-                            />
-                        ))
+                <div className="flex gap-4 overflow-x-auto pb-4 snak-scrollbar snap-x items-center">
+                    {allVideos.length > 0 ? (
+                        <>
+                            {allVideos.map((video) => (
+                                <EpisodeCard
+                                    key={video.id}
+                                    video={video}
+                                    onClick={onEpisodeClick}
+                                />
+                            ))}
+                            
+                            {canShowMore && (
+                                <Button
+                                    variant="ghost"
+                                    onClick={handleLoadMore}
+                                    disabled={isFetchingNextPage}
+                                    className="flex-shrink-0 h-auto self-stretch min-h-[100px] w-12 bg-snak-purple-medium/10 hover:bg-snak-purple-medium/30 rounded-xl border border-white/5 transition-all duration-300 group"
+                                >
+                                    {isFetchingNextPage ? (
+                                        <Loader2 className="size-6 text-snak-pink animate-spin" />
+                                    ) : (
+                                        <ChevronRight className="size-6 text-snak-blue-sky group-hover:text-snak-pink transition-colors" />
+                                    )}
+                                </Button>
+                            )}
+                        </>
                     ) : (
                         <p className="text-zinc-500 text-sm italic">
                             No hay capítulos disponibles para esta serie.

@@ -163,3 +163,29 @@
 .react-player video {
   object-fit: cover;
 }
+
+/* Custom SNAK! Scrollbar */
+.snak-scrollbar::-webkit-scrollbar {
+  height: 4px;
+  width: 4px;
+}
+
+.snak-scrollbar::-webkit-scrollbar-track {
+  background: rgba(46, 2, 89, 0.5); /* Dark purple background */
+  border-radius: 10px;
+}
+
+.snak-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--color-snak-pink);
+  border-radius: 10px;
+}
+
+.snak-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--color-snak-blue-aqua);
+}
+
+/* Firefox support */
+.snak-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-snak-pink) var(--color-snak-purple-dark);
+}
