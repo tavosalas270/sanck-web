@@ -13,7 +13,7 @@ Prioriza el rendimiento, la experiencia móvil (responsive design) y la escalabi
 - **Componentes UI Base:**: Uso OBLIGATORIO de Shadcn/ui. No construyas componentes primitivos desde cero (Ejemplo: Buttons, inputs, modals, cards, etc.) siempre intenta utilizar los que te muesta https://ui.shadcn.com/docs/components.
 - **Estado del Servidor/Fetching:** TanStack Query (`@tanstack/react-query`).
 - **Formularios y Validación:** React Hook Form + Zod.
-- **Reproductor de Video:** `react-player` (Optimizado para lazy loading).
+- **Reproductor de Video:** Etiqueta <video> con controls y autoplay.
 
 ## 3. Reglas de Arquitectura y Estructura
 - **Tipografía:** Uso obligatorio de CHERRY BOMB o JOST segun sea indicado.
