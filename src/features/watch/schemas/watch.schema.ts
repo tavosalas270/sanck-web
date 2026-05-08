@@ -37,3 +37,11 @@ export interface Favorites {
     video_details: Videos;
     created_at: Date;
 }
+
+export interface UserTokenData {
+    id: string;
+    username: string;
+    email: string;
+    tokens: number;
+    created_at: Date;
+}

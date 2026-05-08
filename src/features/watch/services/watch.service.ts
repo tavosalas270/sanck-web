@@ -1,7 +1,7 @@
 'use server';
 
 import { fetchApi } from '../../../utils';
-import { Videos, Series, Categories, Favorites } from '../schemas';
+import { Videos, Series, Categories, Favorites, UserTokenData } from '../schemas';
 
 export const getSeries = async (page: number = 1): Promise<Series[]> => {
     const response = await fetchApi(`/api/series/?page=${page}`, 'GET');
@@ -51,6 +51,39 @@ export const getCategories = async (): Promise<Categories[]> => {
 
 export const getVideos = async (page: number = 1, serie: number): Promise<Videos[]> => {
     const response = await fetchApi(`/api/videos/?page=${page}&serie=${serie}`, 'GET');
+
+    if (!response.ok) {
+        throw { status: response.status };
+    }
+
+    const data = await response.json();
+    return data;
+};
+
+export const postPayVideo = async (videoId: string): Promise<any> => {
+    const response = await fetchApi(`/api/videos/${videoId}/unlock/`, 'POST');
+
+    if (!response.ok) {
+        throw { status: response.status };
+    }
+
+    const data = await response.json();
+    return data;
+};
+
+export const getUserData = async (): Promise<UserTokenData> => {
+    const response = await fetchApi('/api/user/me/', 'GET');
+
+    if (!response.ok) {
+        throw { status: response.status };
+    }
+
+    const data = await response.json();
+    return data;
+};
+
+export const getMyPurchases = async (): Promise<Videos[]> => {
+    const response = await fetchApi('/api/videos/my-purchases/', 'GET');
 
     if (!response.ok) {
         throw { status: response.status };

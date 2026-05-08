@@ -1,6 +1,43 @@
 import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Videos, Series, Categories, Favorites } from '../schemas';
-import { getVideos, getSeries, getCategories, getFavorites, addFavorite } from '../services';
+import { 
+    getVideos, 
+    getSeries, 
+    getCategories, 
+    getFavorites, 
+    addFavorite,
+    getUserData,
+    getMyPurchases,
+    postPayVideo
+} from '../services';
+
+export const usePayVideo = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: postPayVideo,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['user-data'] });
+            queryClient.invalidateQueries({ queryKey: ['my-purchases'] });
+        }
+    });
+};
+
+export const useUserData = () => {
+    return useQuery({
+        queryKey: ['user-data'],
+        queryFn: getUserData,
+        staleTime: 1000 * 60 * 5, // 5 minutes
+    });
+};
+
+export const useMyPurchases = () => {
+    return useQuery({
+        queryKey: ['my-purchases'],
+        queryFn: getMyPurchases,
+        staleTime: 1000 * 60 * 60, // 1 hour
+    });
+};
 
 export const useSeries = () => {
     const query = useInfiniteQuery({
