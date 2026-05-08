@@ -1,10 +1,34 @@
 'use server';
 
 import { fetchApi } from '../../../utils';
-import { Videos, Series, Categories } from '../schemas';
+import { Videos, Series, Categories, Favorites } from '../schemas';
 
 export const getSeries = async (page: number = 1): Promise<Series[]> => {
     const response = await fetchApi(`/api/series/?page=${page}`, 'GET');
+
+    if (!response.ok) {
+        throw { status: response.status };
+    }
+
+    const data = await response.json();
+    return data;
+};
+
+export const getFavorites = async (page: number = 1): Promise<Favorites[]> => {
+    const response = await fetchApi(`/api/favorites/?page=${page}`, 'GET');
+
+    if (!response.ok) {
+        throw { status: response.status };
+    }
+
+    const data = await response.json();
+    return data;
+};
+
+export const addFavorite = async (videoId: string): Promise<Favorites> => {
+    const response = await fetchApi('/api/favorites/', 'POST', {
+        body: JSON.stringify({ video: videoId })
+    });
 
     if (!response.ok) {
         throw { status: response.status };

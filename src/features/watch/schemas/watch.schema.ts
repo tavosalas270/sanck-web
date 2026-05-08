@@ -30,3 +30,10 @@ export interface Categories {
     id: number;
     name: string;
 }
+
+export interface Favorites {
+    id: string;
+    video: string;
+    video_details: Videos;
+    created_at: Date;
+}

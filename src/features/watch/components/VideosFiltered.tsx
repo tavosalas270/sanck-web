@@ -9,9 +9,10 @@ interface VideosFilteredProps {
     searchQuery: string;
     selectedCategoryId?: string;
     onEpisodeClick: (video: Videos) => void;
+    favoriteVideoIds?: Set<string>;
 }
 
-export const VideosFiltered = ({ series, searchQuery, selectedCategoryId, onEpisodeClick }: VideosFilteredProps) => {
+export const VideosFiltered = ({ series, searchQuery, selectedCategoryId, onEpisodeClick, favoriteVideoIds }: VideosFilteredProps) => {
     const filteredVideos = useMemo(() => {
         // Mostrar si hay texto o si hay categoría seleccionada
         if (!searchQuery.trim() && !selectedCategoryId) return [];
@@ -66,6 +67,7 @@ export const VideosFiltered = ({ series, searchQuery, selectedCategoryId, onEpis
                         key={video.id}
                         video={video}
                         onClick={onEpisodeClick}
+                        isFavorite={favoriteVideoIds?.has(video.id.toString())}
                         className="w-full h-full flex-shrink"
                     />
                 ))}

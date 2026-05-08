@@ -1,6 +1,6 @@
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import { Videos, Series, Categories } from '../schemas';
-import { getVideos, getSeries, getCategories } from '../services';
+import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Videos, Series, Categories, Favorites } from '../schemas';
+import { getVideos, getSeries, getCategories, getFavorites, addFavorite } from '../services';
 
 export const useSeries = () => {
     const query = useInfiniteQuery({
@@ -27,6 +27,43 @@ export const useCategories = () => {
         queryKey: ['categories'],
         queryFn: getCategories,
         staleTime: 1000 * 60 * 60, // 1 hour
+    });
+};
+
+export const useFavorites = () => {
+    const query = useInfiniteQuery({
+        queryKey: ['favorites'],
+        queryFn: ({ pageParam = 1 }) => getFavorites(pageParam),
+        getNextPageParam: (lastPage, allPages) => {
+            return lastPage.length > 0 ? allPages.length + 1 : undefined;
+        },
+        initialPageParam: 1,
+    });
+
+    return query;
+};
+
+export const useAddFavorite = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: addFavorite,
+        onSuccess: (newFavorite) => {
+            queryClient.setQueryData(['favorites'], (oldData: any) => {
+                if (!oldData) return {
+                    pages: [[newFavorite]],
+                    pageParams: [1]
+                };
+
+                return {
+                    ...oldData,
+                    pages: [
+                        [newFavorite, ...oldData.pages[0]],
+                        ...oldData.pages.slice(1)
+                    ]
+                };
+            });
+        }
     });
 };
 

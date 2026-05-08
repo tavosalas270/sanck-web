@@ -3,16 +3,32 @@
 import Image from "next/image";
 import { Videos } from "../schemas";
 import { formatUrl } from "@/lib/utils";
-import { Play } from "lucide-react";
+import { Play, Star, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAddFavorite } from "../hooks/useWatch";
 
 interface EpisodeCardProps {
     video: Videos;
     onClick: (video: Videos) => void;
+    isFavorite?: boolean;
     className?: string;
 }
 
-export const EpisodeCard = ({ video, onClick, className }: EpisodeCardProps) => {
+export const EpisodeCard = ({ video, onClick, isFavorite, className }: EpisodeCardProps) => {
+    const { mutate: addFavorite, isPending } = useAddFavorite();
+
+    const handleFavoriteClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        addFavorite(video.id.toString(), {
+            onSuccess: () => {
+                // Podríamos mostrar un toast aquí
+            },
+            onError: (error) => {
+                console.error("Error adding to favorites", error);
+            }
+        });
+    };
+
     return (
         <div 
             onClick={() => onClick(video)}
@@ -35,6 +51,26 @@ export const EpisodeCard = ({ video, onClick, className }: EpisodeCardProps) => 
             {/* Overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 transition-opacity group-hover:opacity-100" />
             
+            {/* Star Button (Favorite) */}
+            <button
+                onClick={handleFavoriteClick}
+                disabled={isPending}
+                className={cn(
+                    "absolute top-2 right-2 z-10 size-8 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center border border-white/10 hover:bg-snak-pink transition-all opacity-80 group-hover:opacity-100 group/star",
+                    isFavorite && "border-snak-pink/50 bg-snak-pink/20 opacity-100"
+                )}
+            >
+                {isPending ? (
+                    <Loader2 className="size-4 text-white animate-spin" />
+                ) : (
+                    <Star className={cn(
+                        "size-4 text-white transition-colors",
+                        isFavorite && "fill-snak-pink text-snak-pink",
+                        "group-hover/star:fill-white group-hover/star:text-white"
+                    )} />
+                )}
+            </button>
+
             {/* Play Button Overlay */}
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 <div className="size-10 rounded-full bg-snak-pink flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition-transform">

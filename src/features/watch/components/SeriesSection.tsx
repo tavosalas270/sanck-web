@@ -12,9 +12,10 @@ import { ChevronRight, Loader2 } from "lucide-react";
 interface SeriesSectionProps {
     series: Series;
     onEpisodeClick: (video: Videos) => void;
+    favoriteVideoIds?: Set<string>;
 }
 
-export const SeriesSection = ({ series, onEpisodeClick }: SeriesSectionProps) => {
+export const SeriesSection = ({ series, onEpisodeClick, favoriteVideoIds }: SeriesSectionProps) => {
     const [loadMore, setLoadMore] = useState(false);
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useVideos(series.id, 2, loadMore);
 
@@ -73,6 +74,7 @@ export const SeriesSection = ({ series, onEpisodeClick }: SeriesSectionProps) =>
                                     key={video.id}
                                     video={video}
                                     onClick={onEpisodeClick}
+                                    isFavorite={favoriteVideoIds?.has(video.id.toString())}
                                 />
                             ))}
                             
