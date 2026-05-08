@@ -60,14 +60,14 @@ export const VideosFiltered = ({ series, searchQuery, selectedCategoryId, onEpis
                 </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
                 {filteredVideos.map((video) => (
-                    <div key={video.id} className="flex justify-center">
-                        <EpisodeCard
-                            video={video}
-                            onClick={onEpisodeClick}
-                        />
-                    </div>
+                    <EpisodeCard
+                        key={video.id}
+                        video={video}
+                        onClick={onEpisodeClick}
+                        className="w-full h-full flex-shrink"
+                    />
                 ))}
             </div>
         </div>

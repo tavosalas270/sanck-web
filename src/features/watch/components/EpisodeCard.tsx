@@ -4,17 +4,22 @@ import Image from "next/image";
 import { Videos } from "../schemas";
 import { formatUrl } from "@/lib/utils";
 import { Play } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface EpisodeCardProps {
     video: Videos;
     onClick: (video: Videos) => void;
+    className?: string;
 }
 
-export const EpisodeCard = ({ video, onClick }: EpisodeCardProps) => {
+export const EpisodeCard = ({ video, onClick, className }: EpisodeCardProps) => {
     return (
         <div 
             onClick={() => onClick(video)}
-            className="group relative flex-shrink-0 w-48 md:w-56 aspect-video rounded-xl overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 hover:ring-2 hover:ring-snak-pink/50"
+            className={cn(
+                "group relative flex-shrink-0 w-48 md:w-56 aspect-video rounded-xl overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 hover:ring-2 hover:ring-snak-pink/50",
+                className
+            )}
         >
             {formatUrl(video.thumbnail_path) ? (
                 <Image
