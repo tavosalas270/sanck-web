@@ -7,14 +7,17 @@ import { EpisodeCard } from "./EpisodeCard";
 interface VideosFilteredProps {
     series: Series[];
     searchQuery: string;
+    selectedCategoryId?: string;
     onEpisodeClick: (video: Videos) => void;
 }
 
-export const VideosFiltered = ({ series, searchQuery, onEpisodeClick }: VideosFilteredProps) => {
+export const VideosFiltered = ({ series, searchQuery, selectedCategoryId, onEpisodeClick }: VideosFilteredProps) => {
     const filteredVideos = useMemo(() => {
-        if (!searchQuery.trim()) return [];
+        // Mostrar si hay texto o si hay categoría seleccionada
+        if (!searchQuery.trim() && !selectedCategoryId) return [];
 
         const query = searchQuery.toLowerCase();
+        const catId = selectedCategoryId ? parseInt(selectedCategoryId) : null;
         
         // Extraemos todos los videos de todas las series cargadas
         const allVideos: Videos[] = [];
@@ -29,14 +32,18 @@ export const VideosFiltered = ({ series, searchQuery, onEpisodeClick }: VideosFi
             });
         });
 
-        return allVideos.filter(v => v.title.toLowerCase().includes(query));
-    }, [series, searchQuery]);
+        return allVideos.filter(v => {
+            const matchesQuery = query ? v.title.toLowerCase().includes(query) : true;
+            const matchesCategory = catId ? v.category_id === catId : true;
+            return matchesQuery && matchesCategory;
+        });
+    }, [series, searchQuery, selectedCategoryId]);
 
     if (filteredVideos.length === 0) {
         return (
             <div className="w-full py-20 flex flex-col items-center justify-center text-zinc-500 animate-in fade-in duration-500">
-                <p className="text-lg font-medium">No se encontraron videos con "{searchQuery}"</p>
-                <p className="text-sm italic mt-2">Intenta con otro título o palabra clave</p>
+                <p className="text-lg font-medium">No se encontraron videos con esos filtros</p>
+                <p className="text-sm italic mt-2">Intenta con otros términos o categorías</p>
             </div>
         );
     }
@@ -46,9 +53,9 @@ export const VideosFiltered = ({ series, searchQuery, onEpisodeClick }: VideosFi
             <div className="flex items-center gap-3">
                 <div className="h-8 w-1 bg-snak-pink rounded-full" />
                 <h2 className="text-2xl font-heading text-white">
-                    Resultados para: <span className="text-snak-blue-sky">{searchQuery}</span>
+                    Resultados {searchQuery && <>para: <span className="text-snak-blue-sky">{searchQuery}</span></>}
                 </h2>
-                <span className="text-zinc-500 text-sm ml-auto">
+                <span className="text-zinc-500 text-sm ml-auto font-medium bg-white/5 px-3 py-1 rounded-full border border-white/10">
                     {filteredVideos.length} {filteredVideos.length === 1 ? 'video' : 'videos'}
                 </span>
             </div>

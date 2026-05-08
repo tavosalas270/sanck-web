@@ -25,3 +25,8 @@ export interface Series {
     poster: string;
     videos: Videos[];
 }
+
+export interface Categories {
+    id: number;
+    name: string;
+}

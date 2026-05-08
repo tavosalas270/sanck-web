@@ -1,10 +1,21 @@
 'use server';
 
 import { fetchApi } from '../../../utils';
-import { Videos, Series } from '../schemas';
+import { Videos, Series, Categories } from '../schemas';
 
 export const getSeries = async (page: number = 1): Promise<Series[]> => {
     const response = await fetchApi(`/api/series/?page=${page}`, 'GET');
+
+    if (!response.ok) {
+        throw { status: response.status };
+    }
+
+    const data = await response.json();
+    return data;
+};
+
+export const getCategories = async (): Promise<Categories[]> => {
+    const response = await fetchApi('/api/categories/', 'GET');
 
     if (!response.ok) {
         throw { status: response.status };

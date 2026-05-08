@@ -1,6 +1,6 @@
-import { useInfiniteQuery } from '@tanstack/react-query';
-import { Videos, Series } from '../schemas';
-import { getVideos, getSeries } from '../services';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { Videos, Series, Categories } from '../schemas';
+import { getVideos, getSeries, getCategories } from '../services';
 
 export const useSeries = () => {
     const query = useInfiniteQuery({
@@ -20,6 +20,14 @@ export const useSeries = () => {
     });
 
     return query;
+};
+
+export const useCategories = () => {
+    return useQuery({
+        queryKey: ['categories'],
+        queryFn: getCategories,
+        staleTime: 1000 * 60 * 60, // 1 hour
+    });
 };
 
 export const useVideos = (serie: number, initialPage: number = 1, enabled: boolean = true) => {
