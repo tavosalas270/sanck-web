@@ -19,6 +19,9 @@ export const usePayVideo = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['user-data'] });
             queryClient.invalidateQueries({ queryKey: ['my-purchases'] });
+            queryClient.invalidateQueries({ queryKey: ['series'] });
+            queryClient.invalidateQueries({ queryKey: ['favorites'] });
+            queryClient.invalidateQueries({ queryKey: ['videos'] });
         }
     });
 };

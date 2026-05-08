@@ -90,5 +90,6 @@ export const getMyPurchases = async (): Promise<Videos[]> => {
     }
 
     const data = await response.json();
+    console.log(data)
     return data;
 };

@@ -16,6 +16,7 @@ export interface Videos {
     username?: string;
     created_at: Date;
     cost: number;
+    is_unlocked: boolean;
 }
 
 export interface Series {

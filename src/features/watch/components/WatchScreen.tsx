@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from 'react';
-import { useSeries, useCategories, useFavorites } from '../hooks/useWatch';
+import { useState, useMemo } from 'react';
+import { useSeries, useCategories, useFavorites, useUserData } from '../hooks/useWatch';
 import { 
     SeriesSection, 
     VideosFiltered, 
@@ -11,8 +11,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { Videos } from '../schemas';
 import { Input } from '@/components/ui/input';
-import { Search, X, Filter, PlayCircle, Heart } from 'lucide-react';
-import { useMemo } from 'react';
+import { Search, X, Filter, PlayCircle, Heart, Coins, Loader2 } from 'lucide-react';
 import {
     Select,
     SelectContent,
@@ -31,6 +30,7 @@ export const WatchScreen = () => {
     const querySeries = useSeries();
     const queryCategories = useCategories();
     const queryFavorites = useFavorites();
+    const { data: userData, isLoading: isUserLoading } = useUserData();
     
     const [selectedVideo, setSelectedVideo] = useState<Videos | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
@@ -78,32 +78,61 @@ export const WatchScreen = () => {
                 {/* Header / Search Section Sticky */}
                 <header className="sticky top-0 z-50 w-full bg-snak-purple-dark/80 backdrop-blur-md border-b border-white/5 px-4 md:px-12 py-4">
                     <div className="max-w-[1440px] mx-auto space-y-6">
-                        {/* Top Row: Title and Tabs */}
+                        {/* Top Row: Title, Tabs and Tokens */}
                         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                            <h1 className="text-2xl font-heading text-white">
-                                Explorar
-                            </h1>
+                            <div className="flex items-center justify-between w-full sm:w-auto gap-8">
+                                <h1 className="text-2xl font-heading text-white">
+                                    Explorar
+                                </h1>
+
+                                {/* Tokens Balance (Mobile) */}
+                                <div className="flex sm:hidden items-center gap-2 bg-snak-pink/20 border border-snak-pink/30 px-3 py-1.5 rounded-full shadow-[0_0_15px_rgba(191,15,180,0.2)]">
+                                    <Coins className="size-4 text-snak-pink animate-pulse" />
+                                    {isUserLoading ? (
+                                        <Loader2 className="size-3 animate-spin text-snak-pink" />
+                                    ) : (
+                                        <span className="text-sm font-black text-white">{userData?.tokens || 0}</span>
+                                    )}
+                                </div>
+                            </div>
                             
-                            <TabsList className="bg-snak-purple-medium/30 border border-white/10 p-1 h-11 rounded-full">
-                                <TabsTrigger 
-                                    value="watch" 
-                                    className="rounded-full px-6 data-[state=active]:bg-snak-pink data-[state=active]:text-white transition-all"
-                                >
-                                    <div className="flex items-center gap-2">
-                                        <PlayCircle className="size-4" />
-                                        <span>Watch</span>
+                            <div className="flex items-center gap-4 w-full sm:w-auto justify-center">
+                                <TabsList className="bg-snak-purple-medium/30 border border-white/10 p-1 h-11 rounded-full">
+                                    <TabsTrigger 
+                                        value="watch" 
+                                        className="rounded-full px-6 data-[state=active]:bg-snak-pink data-[state=active]:text-white transition-all"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <PlayCircle className="size-4" />
+                                            <span>Watch</span>
+                                        </div>
+                                    </TabsTrigger>
+                                    <TabsTrigger 
+                                        value="favorites" 
+                                        className="rounded-full px-6 data-[state=active]:bg-snak-pink data-[state=active]:text-white transition-all"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <Heart className="size-4" />
+                                            <span>Favorites</span>
+                                        </div>
+                                    </TabsTrigger>
+                                </TabsList>
+
+                                {/* Tokens Balance (Desktop) */}
+                                <div className="hidden sm:flex items-center gap-2 bg-snak-pink/10 border border-snak-pink/20 px-4 py-2 rounded-full hover:bg-snak-pink/20 transition-all cursor-default group shadow-[0_0_20px_rgba(191,15,180,0.1)]">
+                                    <div className="size-6 rounded-full bg-snak-pink flex items-center justify-center shadow-lg shadow-snak-pink/20">
+                                        <Coins className="size-3.5 text-white group-hover:rotate-12 transition-transform" />
                                     </div>
-                                </TabsTrigger>
-                                <TabsTrigger 
-                                    value="favorites" 
-                                    className="rounded-full px-6 data-[state=active]:bg-snak-pink data-[state=active]:text-white transition-all"
-                                >
-                                    <div className="flex items-center gap-2">
-                                        <Heart className="size-4" />
-                                        <span>Favorites</span>
+                                    <div className="flex flex-col leading-none">
+                                        <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-tighter">Tu Saldo</span>
+                                        {isUserLoading ? (
+                                            <Loader2 className="size-3 animate-spin text-snak-pink mt-1" />
+                                        ) : (
+                                            <span className="text-sm font-black text-white">{userData?.tokens || 0}</span>
+                                        )}
                                     </div>
-                                </TabsTrigger>
-                            </TabsList>
+                                </div>
+                            </div>
                         </div>
 
                         {/* Bottom Row: Filters */}
