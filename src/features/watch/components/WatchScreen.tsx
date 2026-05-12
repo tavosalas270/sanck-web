@@ -42,16 +42,6 @@ export const WatchScreen = () => {
 
     const isFiltering = searchQuery.length > 0 || (selectedCategoryId !== '' && selectedCategoryId !== 'all');
 
-    const favoriteVideoIds = useMemo(() => {
-        const ids = new Set<string>();
-        queryFavorites.data?.pages.forEach(page => {
-            page.forEach(fav => {
-                ids.add(fav.video.toString());
-            });
-        });
-        return ids;
-    }, [queryFavorites.data]);
-
     if (querySeries.isLoading) {
         return (
             <div className="min-h-screen w-full bg-snak-purple-dark p-4 md:p-12 space-y-12">
@@ -208,7 +198,6 @@ export const WatchScreen = () => {
                                 searchQuery={searchQuery}
                                 selectedCategoryId={selectedCategoryId === 'all' ? undefined : selectedCategoryId}
                                 onEpisodeClick={handleEpisodeClick}
-                                favoriteVideoIds={favoriteVideoIds}
                             />
                         ) : (
                             <>
@@ -218,7 +207,6 @@ export const WatchScreen = () => {
                                             key={series.id}
                                             series={series}
                                             onEpisodeClick={handleEpisodeClick}
-                                            favoriteVideoIds={favoriteVideoIds}
                                         />
                                     ))
                                 ) : (

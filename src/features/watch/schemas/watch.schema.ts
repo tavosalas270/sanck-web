@@ -17,6 +17,7 @@ export interface Videos {
     created_at: Date;
     cost: number;
     is_unlocked: boolean;
+    is_favorite?: boolean;
 }
 
 export interface Series {
@@ -45,4 +46,10 @@ export interface UserTokenData {
     email: string;
     tokens: number;
     created_at: Date;
+}
+
+export interface AddFavoriteResponse {
+    message: string;
+    is_favorite: boolean;
+    data: Videos;
 }

@@ -25,7 +25,7 @@ export const getFavorites = async (page: number = 1): Promise<Favorites[]> => {
     return data;
 };
 
-export const addFavorite = async (videoId: string): Promise<Favorites> => {
+export const addFavorite = async (videoId: string): Promise<any> => {
     const response = await fetchApi('/api/favorites/', 'POST', {
         body: JSON.stringify({ video: videoId })
     });

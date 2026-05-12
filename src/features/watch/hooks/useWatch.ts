@@ -88,21 +88,38 @@ export const useAddFavorite = () => {
 
     return useMutation({
         mutationFn: addFavorite,
-        onSuccess: (newFavorite) => {
-            queryClient.setQueryData(['favorites'], (oldData: any) => {
-                if (!oldData) return {
-                    pages: [[newFavorite]],
-                    pageParams: [1]
-                };
+        onSuccess: (response, videoId) => {
+            const isFav = response.is_favorite;
 
+            // Actualizar caché de series
+            queryClient.setQueriesData({ queryKey: ['series'] }, (oldData: any) => {
+                if (!oldData?.pages) return oldData;
                 return {
                     ...oldData,
-                    pages: [
-                        [newFavorite, ...oldData.pages[0]],
-                        ...oldData.pages.slice(1)
-                    ]
+                    pages: oldData.pages.map((page: Series[]) =>
+                        page.map(serie => ({
+                            ...serie,
+                            videos: serie.videos.map(v => v.id.toString() === videoId.toString() ? { ...v, is_favorite: isFav } : v)
+                        }))
+                    )
                 };
             });
+
+            // Actualizar caché de videos (paginación)
+            queryClient.setQueriesData({ queryKey: ['videos'] }, (oldData: any) => {
+                if (!oldData?.pages) return oldData;
+                return {
+                    ...oldData,
+                    pages: oldData.pages.map((page: Videos[]) =>
+                        page.map(v => v.id.toString() === videoId.toString() ? { ...v, is_favorite: isFav } : v)
+                    )
+                };
+            });
+
+            // Invalidar queries para mantener sincronización general
+            queryClient.invalidateQueries({ queryKey: ['favorites'] });
+            queryClient.invalidateQueries({ queryKey: ['series'] });
+            queryClient.invalidateQueries({ queryKey: ['videos'] });
         }
     });
 };

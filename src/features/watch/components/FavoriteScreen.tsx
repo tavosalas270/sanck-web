@@ -51,6 +51,7 @@ export const FavoriteScreen = () => {
                                 key={fav.id}
                                 video={fav.video_details}
                                 onClick={handleEpisodeClick}
+                                isFavorite={fav.video_details.is_favorite ?? true}
                                 className="w-full h-full flex-shrink"
                             />
                         ))}

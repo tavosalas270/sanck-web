@@ -37,7 +37,12 @@ export const EpisodeCard = ({ video, onClick, isFavorite, className }: EpisodeCa
 
     const handleCardClick = () => {
         if (shouldShowPrice) {
-            setIsConfirmOpen(true);
+            const userTokens = userData?.tokens || 0;
+            if (userTokens < video.cost) {
+                setIsInsufficientOpen(true);
+            } else {
+                setIsConfirmOpen(true);
+            }
         } else {
             onClick(video);
         }
@@ -49,14 +54,6 @@ export const EpisodeCard = ({ video, onClick, isFavorite, className }: EpisodeCa
     };
 
     const handleConfirmPay = () => {
-        // Verificar saldo
-        const userTokens = userData?.tokens || 0;
-        if (userTokens < video.cost) {
-            setIsConfirmOpen(false);
-            setTimeout(() => setIsInsufficientOpen(true), 100);
-            return;
-        }
-
         payVideo(video.id.toString(), {
             onSuccess: () => {
                 setIsConfirmOpen(false);
