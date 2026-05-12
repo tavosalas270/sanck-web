@@ -62,10 +62,10 @@ export const getVideos = async (page: number = 1, serie: number): Promise<Videos
 
 export const postSearchVideos = async (query?: string, category?: string): Promise<Videos[]> => {
     let url = '/api/videos/?';
-    if (query) {
+    if (query && query != "") {
         url += `search=${encodeURIComponent(query)}&`;
     }
-    if (category) {
+    if (category && category != "") {
         url += `category=${encodeURIComponent(category)}`;
     }
 
