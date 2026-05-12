@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Series, Videos } from "../schemas";
 import { EpisodeCard } from "./EpisodeCard";
 
@@ -12,6 +13,8 @@ interface VideosFilteredProps {
 }
 
 export const VideosFiltered = ({ series, searchQuery, selectedCategoryId, onEpisodeClick }: VideosFilteredProps) => {
+    const queryClient = useQueryClient();
+
     const filteredVideos = useMemo(() => {
         // Mostrar si hay texto o si hay categoría seleccionada
         if (!searchQuery.trim() && !selectedCategoryId) return [];
@@ -32,12 +35,29 @@ export const VideosFiltered = ({ series, searchQuery, selectedCategoryId, onEpis
             });
         });
 
+        // Extraemos videos del caché del infiniteQuery de 'videos'
+        const cachedVideosQueries = queryClient.getQueriesData<any>({ queryKey: ['videos'] });
+        cachedVideosQueries.forEach(([queryKey, data]) => {
+            if (data && data.pages) {
+                data.pages.forEach((page: Videos[]) => {
+                    if (Array.isArray(page)) {
+                        page.forEach(v => {
+                            if (!seenIds.has(v.id)) {
+                                allVideos.push(v);
+                                seenIds.add(v.id);
+                            }
+                        });
+                    }
+                });
+            }
+        });
+
         return allVideos.filter(v => {
             const matchesQuery = query ? v.title.toLowerCase().includes(query) : true;
             const matchesCategory = catId ? v.category_id === catId : true;
             return matchesQuery && matchesCategory;
         });
-    }, [series, searchQuery, selectedCategoryId]);
+    }, [series, searchQuery, selectedCategoryId, queryClient]);
 
     if (filteredVideos.length === 0) {
         return (
