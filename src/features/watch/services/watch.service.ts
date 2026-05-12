@@ -60,6 +60,25 @@ export const getVideos = async (page: number = 1, serie: number): Promise<Videos
     return data;
 };
 
+export const postSearchVideos = async (query?: string, category?: string): Promise<Videos[]> => {
+    let url = '/api/videos/?';
+    if (query) {
+        url += `search=${encodeURIComponent(query)}&`;
+    }
+    if (category) {
+        url += `category=${encodeURIComponent(category)}`;
+    }
+
+    const response = await fetchApi(url, 'GET');
+
+    if (!response.ok) {
+        throw { status: response.status };
+    }
+
+    const data = await response.json();
+    return data;
+};
+
 export const postPayVideo = async (videoId: string): Promise<any> => {
     const response = await fetchApi(`/api/videos/${videoId}/unlock/`, 'POST');
 

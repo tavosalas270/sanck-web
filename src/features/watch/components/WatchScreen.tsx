@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useMemo } from 'react';
-import { useSeries, useCategories, useFavorites, useUserData } from '../hooks/useWatch';
+import { useQueryClient } from '@tanstack/react-query';
+import { useSeries, useCategories, useFavorites, useUserData, useSearchVideos } from '../hooks/useWatch';
 import { 
     SeriesSection, 
     VideosFiltered, 
@@ -27,6 +28,7 @@ import {
 } from "@/components/ui/tabs";
 
 export const WatchScreen = () => {
+    const queryClient = useQueryClient();
     const querySeries = useSeries();
     const queryCategories = useCategories();
     const queryFavorites = useFavorites();
@@ -35,6 +37,11 @@ export const WatchScreen = () => {
     const [selectedVideo, setSelectedVideo] = useState<Videos | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
+
+    const { data: searchResults, refetch: searchVideos } = useSearchVideos(
+        searchQuery, 
+        selectedCategoryId === 'all' ? undefined : selectedCategoryId
+    );
 
     const handleEpisodeClick = (video: Videos) => {
         setSelectedVideo(video);
@@ -129,11 +136,22 @@ export const WatchScreen = () => {
                         <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
                             {/* Input de Búsqueda */}
                             <div className="relative flex-1 w-full group">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-zinc-500 group-focus-within:text-snak-pink transition-colors" />
+                                <button 
+                                    onClick={() => searchVideos()}
+                                    className="absolute left-2 top-1/2 -translate-y-1/2 flex items-center justify-center p-1.5 rounded-full hover:bg-white/10 transition-colors z-10"
+                                    title="Buscar"
+                                >
+                                    <Search className="size-4 text-zinc-500 group-focus-within:text-snak-pink transition-colors" />
+                                </button>
                                 <Input
                                     placeholder="Buscar por título..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            searchVideos();
+                                        }
+                                    }}
                                     className="pl-10 pr-10 bg-snak-purple-medium/20 border-white/10 focus:border-snak-pink/50 focus:ring-snak-pink/20 transition-all rounded-full h-11"
                                 />
                                 {searchQuery && (
@@ -180,6 +198,7 @@ export const WatchScreen = () => {
                                     onClick={() => {
                                         setSearchQuery('');
                                         setSelectedCategoryId('');
+                                        queryClient.resetQueries({ queryKey: ['search-videos'] });
                                     }}
                                     className="text-xs text-snak-pink hover:text-white transition-colors font-bold uppercase tracking-wider px-2"
                                 >
@@ -197,6 +216,7 @@ export const WatchScreen = () => {
                                 series={seriesData}
                                 searchQuery={searchQuery}
                                 selectedCategoryId={selectedCategoryId === 'all' ? undefined : selectedCategoryId}
+                                apiSearchResults={searchResults}
                                 onEpisodeClick={handleEpisodeClick}
                             />
                         ) : (

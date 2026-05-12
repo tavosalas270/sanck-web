@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { Videos, Series, Categories, Favorites } from '../schemas';
 import { 
     getVideos, 
@@ -8,7 +8,8 @@ import {
     addFavorite,
     getUserData,
     getMyPurchases,
-    postPayVideo
+    postPayVideo,
+    postSearchVideos
 } from '../services';
 
 export const usePayVideo = () => {
@@ -141,6 +142,13 @@ export const useVideos = (serie: number, initialPage: number = 1, enabled: boole
         },
         enabled,
     });
-
     return query;
+};
+
+export const useSearchVideos = (query?: string, category?: string) => {
+    return useQuery({
+        queryKey: ['search-videos'],
+        queryFn: () => postSearchVideos(query, category),
+        enabled: false, // The query will only be executed manually via refetch
+    });
 };

@@ -9,10 +9,11 @@ interface VideosFilteredProps {
     series: Series[];
     searchQuery: string;
     selectedCategoryId?: string;
+    apiSearchResults?: Videos[];
     onEpisodeClick: (video: Videos) => void;
 }
 
-export const VideosFiltered = ({ series, searchQuery, selectedCategoryId, onEpisodeClick }: VideosFilteredProps) => {
+export const VideosFiltered = ({ series, searchQuery, selectedCategoryId, apiSearchResults, onEpisodeClick }: VideosFilteredProps) => {
     const queryClient = useQueryClient();
 
     const filteredVideos = useMemo(() => {
@@ -22,15 +23,15 @@ export const VideosFiltered = ({ series, searchQuery, selectedCategoryId, onEpis
         const query = searchQuery.toLowerCase();
         const catId = selectedCategoryId ? parseInt(selectedCategoryId) : null;
         
-        // Extraemos todos los videos de todas las series cargadas
-        const allVideos: Videos[] = [];
-        const seenIds = new Set<number>();
+        // 1. Extraemos todos los videos locales de todas las series cargadas
+        const localVideos: Videos[] = [];
+        const localSeenIds = new Set<number>();
 
         series.forEach(s => {
             s.videos.forEach(v => {
-                if (!seenIds.has(v.id)) {
-                    allVideos.push(v);
-                    seenIds.add(v.id);
+                if (!localSeenIds.has(v.id)) {
+                    localVideos.push(v);
+                    localSeenIds.add(v.id);
                 }
             });
         });
@@ -42,9 +43,9 @@ export const VideosFiltered = ({ series, searchQuery, selectedCategoryId, onEpis
                 data.pages.forEach((page: Videos[]) => {
                     if (Array.isArray(page)) {
                         page.forEach(v => {
-                            if (!seenIds.has(v.id)) {
-                                allVideos.push(v);
-                                seenIds.add(v.id);
+                            if (!localSeenIds.has(v.id)) {
+                                localVideos.push(v);
+                                localSeenIds.add(v.id);
                             }
                         });
                     }
@@ -52,12 +53,29 @@ export const VideosFiltered = ({ series, searchQuery, selectedCategoryId, onEpis
             }
         });
 
-        return allVideos.filter(v => {
+        // 2. Filtramos localmente solo los videos que ya teníamos en caché (series e infiniteQuery de videos)
+        const filteredLocal = localVideos.filter(v => {
             const matchesQuery = query ? v.title.toLowerCase().includes(query) : true;
             const matchesCategory = catId ? v.category_id === catId : true;
             return matchesQuery && matchesCategory;
         });
-    }, [series, searchQuery, selectedCategoryId, queryClient]);
+
+        // 3. Cruzar con la data del API
+        const finalVideos: Videos[] = [...filteredLocal];
+        const finalSeenIds = new Set<number>(filteredLocal.map(v => v.id));
+
+        // Solo agregamos el resultado actual del API, que se mantiene visible gracias a keepPreviousData
+        if (apiSearchResults && Array.isArray(apiSearchResults)) {
+            apiSearchResults.forEach(v => {
+                if (!finalSeenIds.has(v.id)) {
+                    finalVideos.push(v);
+                    finalSeenIds.add(v.id);
+                }
+            });
+        }
+
+        return finalVideos;
+    }, [series, searchQuery, selectedCategoryId, queryClient, apiSearchResults]);
 
     if (filteredVideos.length === 0) {
         return (
