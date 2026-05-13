@@ -209,8 +209,33 @@ export const useLikeVideo = () => {
                 };
             });
 
+            // Actualizar caché de favoritos
+            queryClient.setQueriesData({ queryKey: ['favorites'] }, (oldData: any) => {
+                if (!oldData?.pages) return oldData;
+                return {
+                    ...oldData,
+                    pages: oldData.pages.map((page: Favorites[]) =>
+                        page.map(fav => {
+                            if (fav.video_details?.id.toString() === videoId.toString()) {
+                                if (fav.video_details.user_has_liked === isLiked) return fav;
+                                return {
+                                    ...fav,
+                                    video_details: {
+                                        ...fav.video_details,
+                                        user_has_liked: isLiked,
+                                        likes_count: Math.max(0, (fav.video_details.likes_count || 0) + likeDiff)
+                                    }
+                                };
+                            }
+                            return fav;
+                        })
+                    )
+                };
+            });
+
             queryClient.invalidateQueries({ queryKey: ['series'] });
             queryClient.invalidateQueries({ queryKey: ['videos'] });
+            queryClient.invalidateQueries({ queryKey: ['favorites'] });
         }
     });
 };
