@@ -6,7 +6,7 @@ import { Videos } from "../schemas";
 import { cn, formatUrl } from "@/lib/utils";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Heart, Loader2 } from "lucide-react";
-import { useComments, useLikeVideo } from "../hooks/useWatch";
+import { useComments, useLikeVideo, usePostComment, useUserData } from "../hooks/useWatch";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -18,6 +18,35 @@ interface VideoPlayerModalProps {
 export const VideoPlayerModal = ({ video, onClose }: VideoPlayerModalProps) => {
     const { mutate: likeVideo, isPending: isLikePending } = useLikeVideo();
     const { data: comments, isLoading: isLoadingComments } = useComments(video?.id?.toString());
+    const { data: userData } = useUserData();
+    const { mutate: postComment, isPending: isCommentPending } = usePostComment();
+
+    const [commentText, setCommentText] = useState("");
+    const [replyTexts, setReplyTexts] = useState<Record<number, string>>({});
+
+    const handleSendComment = (parentId?: number) => {
+        const content = parentId ? replyTexts[parentId] : commentText;
+        if (!content || !content.trim()) return;
+
+        const userId = userData?.id || "1";
+        const username = userData?.username || "usuario";
+
+        postComment({
+            video: video.id.toString(),
+            user: userId,
+            user_username: username,
+            content: content.trim(),
+            parent: parentId
+        }, {
+            onSuccess: () => {
+                if (parentId) {
+                    setReplyTexts(prev => ({ ...prev, [parentId]: "" }));
+                } else {
+                    setCommentText("");
+                }
+            }
+        });
+    };
     const [hasLiked, setHasLiked] = useState(video.user_has_liked);
     const [likesCount, setLikesCount] = useState(video.likes_count);
 
@@ -112,11 +141,21 @@ export const VideoPlayerModal = ({ video, onClose }: VideoPlayerModalProps) => {
                         
                         {/* Input sugerido */}
                         <div className="flex gap-3 items-center">
-                            <Avatar className="size-8 border border-white/10">
-                                <AvatarFallback className="bg-snak-purple-medium text-white text-xs font-bold">Tú</AvatarFallback>
+                            <Avatar className="size-8 border border-white/10 shrink-0">
+                                <AvatarFallback className="bg-snak-purple-medium text-white text-xs font-bold">
+                                    {userData?.username?.slice(0, 2)?.toUpperCase() || "TÚ"}
+                                </AvatarFallback>
                             </Avatar>
                             <Input 
                                 placeholder="Escriba su comentario..." 
+                                value={commentText}
+                                onChange={(e) => setCommentText(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        handleSendComment();
+                                    }
+                                }}
+                                disabled={isCommentPending}
                                 className="bg-black/40 border-white/10 text-white placeholder:text-zinc-500 focus-visible:ring-snak-pink focus-visible:border-snak-pink rounded-full px-4 h-9 text-sm"
                             />
                         </div>
@@ -129,27 +168,77 @@ export const VideoPlayerModal = ({ video, onClose }: VideoPlayerModalProps) => {
                                 </div>
                             ) : comments && comments.length > 0 ? (
                                 comments.map((comment) => (
-                                    <div key={comment.id} className="flex gap-3 items-start p-2.5 rounded-xl bg-white/[0.02] hover:bg-white/[0.04] transition-colors border border-white/[0.02]">
-                                        <Avatar className="size-8 border border-white/10 shrink-0 mt-0.5">
-                                            {comment.user_avatar ? (
-                                                <AvatarImage src={formatUrl(comment.user_avatar) || undefined} alt={comment.user_username} />
-                                            ) : null}
-                                            <AvatarFallback className="bg-snak-purple-medium text-snak-blue-aqua text-xs font-bold uppercase">
-                                                {comment.user_username?.slice(0, 2) || "U"}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                        <div className="flex flex-col min-w-0 flex-1">
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-xs font-bold text-white hover:underline cursor-pointer truncate">
-                                                    @{comment.user_username}
-                                                </span>
-                                                <span className="text-[10px] text-zinc-500">
-                                                    {new Date(comment.created_at).toLocaleDateString()}
-                                                </span>
+                                    <div key={comment.id} className="flex flex-col gap-2.5 p-3 rounded-xl bg-white/[0.02] hover:bg-white/[0.03] transition-colors border border-white/[0.02]">
+                                        {/* Comentario principal */}
+                                        <div className="flex gap-3 items-start">
+                                            <Avatar className="size-8 border border-white/10 shrink-0 mt-0.5">
+                                                {comment.user_avatar ? (
+                                                    <AvatarImage src={formatUrl(comment.user_avatar) || undefined} alt={comment.user_username} />
+                                                ) : null}
+                                                <AvatarFallback className="bg-snak-purple-medium text-snak-blue-aqua text-xs font-bold uppercase">
+                                                    {comment.user_username?.slice(0, 2) || "U"}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                            <div className="flex flex-col min-w-0 flex-1">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-xs font-bold text-white hover:underline cursor-pointer truncate">
+                                                        @{comment.user_username}
+                                                    </span>
+                                                    <span className="text-[10px] text-zinc-500">
+                                                        {new Date(comment.created_at).toLocaleDateString()}
+                                                    </span>
+                                                </div>
+                                                <p className="text-xs text-zinc-300 mt-1 break-words leading-relaxed">
+                                                    {comment.content}
+                                                </p>
                                             </div>
-                                            <p className="text-xs text-zinc-300 mt-1 break-words leading-relaxed">
-                                                {comment.content}
-                                            </p>
+                                        </div>
+
+                                        {/* Listado de replies si los tiene */}
+                                        {comment.replies && comment.replies.length > 0 && (
+                                            <div className="ml-11 mt-0.5 flex flex-col gap-2.5 border-l border-white/10 pl-3">
+                                                {comment.replies.map((reply) => (
+                                                    <div key={reply.id} className="flex gap-2.5 items-start">
+                                                        <Avatar className="size-6 border border-white/10 shrink-0 mt-0.5">
+                                                            {reply.user_avatar ? (
+                                                                <AvatarImage src={formatUrl(reply.user_avatar) || undefined} alt={reply.user_username} />
+                                                            ) : null}
+                                                            <AvatarFallback className="bg-snak-purple-dark text-snak-pink text-[10px] font-bold uppercase">
+                                                                {reply.user_username?.slice(0, 2) || "U"}
+                                                            </AvatarFallback>
+                                                        </Avatar>
+                                                        <div className="flex flex-col min-w-0 flex-1">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-[11px] font-bold text-zinc-300 hover:underline cursor-pointer truncate">
+                                                                    @{reply.user_username}
+                                                                </span>
+                                                                <span className="text-[9px] text-zinc-500">
+                                                                    {new Date(reply.created_at).toLocaleDateString()}
+                                                                </span>
+                                                            </div>
+                                                            <p className="text-[11px] text-zinc-400 mt-0.5 break-words leading-relaxed">
+                                                                {reply.content}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        {/* Input para responder a este comentario */}
+                                        <div className="ml-11 mt-1 flex gap-2 items-center">
+                                            <Input 
+                                                placeholder={`Responder a @${comment.user_username}...`}
+                                                value={replyTexts[comment.id] || ""}
+                                                onChange={(e) => setReplyTexts(prev => ({ ...prev, [comment.id]: e.target.value }))}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        handleSendComment(comment.id);
+                                                    }
+                                                }}
+                                                disabled={isCommentPending}
+                                                className="bg-black/20 border-white/5 text-zinc-300 placeholder:text-zinc-600 focus-visible:ring-snak-blue-aqua focus-visible:border-snak-blue-aqua rounded-full px-3 h-7 text-[11px]"
+                                            />
                                         </div>
                                     </div>
                                 ))
