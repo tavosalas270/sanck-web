@@ -1,9 +1,12 @@
 "use client"
 
+import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Videos } from "../schemas";
-import { formatUrl } from "@/lib/utils";
+import { cn, formatUrl } from "@/lib/utils";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import { Heart, Loader2 } from "lucide-react";
+import { useLikeVideo } from "../hooks/useWatch";
 
 interface VideoPlayerModalProps {
     video: Videos;
@@ -11,6 +14,25 @@ interface VideoPlayerModalProps {
 }
 
 export const VideoPlayerModal = ({ video, onClose }: VideoPlayerModalProps) => {
+    const { mutate: likeVideo, isPending: isLikePending } = useLikeVideo();
+    const [hasLiked, setHasLiked] = useState(video.user_has_liked);
+    const [likesCount, setLikesCount] = useState(video.likes_count);
+
+    useEffect(() => {
+        setHasLiked(video.user_has_liked);
+        setLikesCount(video.likes_count);
+    }, [video]);
+
+    const handleLikeClick = () => {
+        likeVideo(video.id.toString(), {
+            onSuccess: (response) => {
+                const isLiked = response.status === 'liked';
+                const likeDiff = isLiked ? 1 : -1;
+                setHasLiked(isLiked);
+                setLikesCount(prev => Math.max(0, (prev || 0) + likeDiff));
+            }
+        });
+    };
 
     return (
         <Dialog open={!!video} onOpenChange={onClose}>
@@ -40,10 +62,32 @@ export const VideoPlayerModal = ({ video, onClose }: VideoPlayerModalProps) => {
                         <h2 className="text-white font-heading text-xl md:text-2xl">
                             {video.title}
                         </h2>
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-col items-end gap-2.5">
                             <span className="px-2 py-1 bg-snak-pink/20 text-snak-pink text-xs font-bold rounded uppercase tracking-wider">
                                 Capítulo {video.episode_number}
                             </span>
+
+                            {/* Botón de like con el mismo estilo premium */}
+                            <button
+                                onClick={handleLikeClick}
+                                disabled={isLikePending}
+                                className={cn(
+                                    "px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-sm border border-white/10 flex items-center gap-1.5 shadow-lg hover:bg-white/10 transition-all opacity-90 hover:opacity-100",
+                                    hasLiked && "border-snak-pink/50 bg-snak-pink/20"
+                                )}
+                            >
+                                {isLikePending ? (
+                                    <Loader2 className="size-3.5 text-white animate-spin" />
+                                ) : (
+                                    <Heart className={cn(
+                                        "size-3.5 transition-colors",
+                                        hasLiked ? "fill-snak-pink text-snak-pink" : "text-white"
+                                    )} />
+                                )}
+                                <span className="text-[10px] font-bold text-white">
+                                    {likesCount ?? 0}
+                                </span>
+                            </button>
                         </div>
                     </div>
 
