@@ -3,11 +3,32 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { loginSchema, LoginFormValues } from '../schemas';
 import { useLogin } from '../hooks';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+
+// Custom Resolver Seguro basado en safeParseAsync para evitar excepciones no capturadas en producción
+const safeZodResolver = (schema: z.ZodType<any, any>) => {
+  return async (data: any) => {
+    const result = await schema.safeParseAsync(data);
+    
+    if (result.success) {
+      return { values: result.data, errors: {} };
+    }
+
+    const errors: Record<string, any> = {};
+    result.error.issues.forEach((issue) => {
+      const path = issue.path.join('.');
+      if (!errors[path]) {
+        errors[path] = { type: issue.code, message: issue.message };
+      }
+    });
+
+    return { values: {}, errors };
+  };
+};
 
 export const LoginForm = () => {
   const router = useRouter();
@@ -18,7 +39,7 @@ export const LoginForm = () => {
     handleSubmit,
     formState: { errors },
   } = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
+    resolver: safeZodResolver(loginSchema),
     defaultValues: {
       identifier: '',
       password: '',
