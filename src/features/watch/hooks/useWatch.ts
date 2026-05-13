@@ -10,7 +10,8 @@ import {
     getMyPurchases,
     postPayVideo,
     postSearchVideos,
-    postLikeVideo
+    postLikeVideo,
+    getComments
 } from '../services';
 
 export const usePayVideo = () => {
@@ -237,5 +238,13 @@ export const useLikeVideo = () => {
             queryClient.invalidateQueries({ queryKey: ['videos'] });
             queryClient.invalidateQueries({ queryKey: ['favorites'] });
         }
+    });
+};
+
+export const useComments = (videoId: string) => {
+    return useQuery({
+        queryKey: ['comments', videoId],
+        queryFn: () => getComments(videoId),
+        enabled: !!videoId,
     });
 };

@@ -63,3 +63,25 @@ export interface AddFavoriteResponse {
     is_favorite: boolean;
     data: Videos;
 }
+
+export interface PostComment {
+    video: string;
+    user: string;
+    user_username: string;
+    content: string;
+    parent?: number;
+}
+
+export interface Comments {
+    id: number;
+    video: string;
+    user: number;
+    user_username: string;
+    user_avatar: string | null;
+    content: string;
+    parent?: number;
+    likes_count: number;
+    replies_count: number;
+    replies: Comments[];
+    created_at: Date;
+}

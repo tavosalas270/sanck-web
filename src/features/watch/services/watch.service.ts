@@ -1,7 +1,7 @@
 'use server';
 
 import { fetchApi } from '../../../utils';
-import { Videos, Series, Categories, Favorites, UserTokenData, LikeVideoResponse } from '../schemas';
+import { Videos, Series, Categories, Favorites, UserTokenData, LikeVideoResponse, PostComment, Comments } from '../schemas';
 
 export const getSeries = async (page: number = 1): Promise<Series[]> => {
     const response = await fetchApi(`/api/series/?page=${page}`, 'GET');
@@ -115,6 +115,30 @@ export const getMyPurchases = async (): Promise<Videos[]> => {
 export const postLikeVideo = async (videoId: string): Promise<LikeVideoResponse> => {
     const response = await fetchApi(`/api/video-interactions/toggle-like/`, 'POST', {
         body: JSON.stringify({ video_id: videoId })
+    });
+
+    if (!response.ok) {
+        throw { status: response.status };
+    }
+
+    const data = await response.json();
+    return data;
+};
+
+export const getComments = async (videoId: string): Promise<Comments[]> => {
+    const response = await fetchApi(`/api/comments/?video_id=${videoId}`, 'GET');
+
+    if (!response.ok) {
+        throw { status: response.status };
+    }
+
+    const data = await response.json();
+    return data;
+};
+
+export const postCommentService = async (comment: PostComment): Promise<Comments> => {
+    const response = await fetchApi(`/api/comments/`, 'POST', {
+        body: JSON.stringify(comment)
     });
 
     if (!response.ok) {
