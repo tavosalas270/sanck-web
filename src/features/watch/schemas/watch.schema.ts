@@ -18,6 +18,8 @@ export interface Videos {
     cost: number;
     is_unlocked: boolean;
     is_favorite?: boolean;
+    likes_count: number;
+    user_has_liked: boolean;
 }
 
 export interface Series {
