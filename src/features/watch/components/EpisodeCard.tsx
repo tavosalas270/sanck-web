@@ -5,7 +5,7 @@ import { Videos } from "../schemas";
 import { formatUrl } from "@/lib/utils";
 import { Play, Star, Loader2, Coins, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAddFavorite, useUserData, usePayVideo } from "../hooks/useWatch";
+import { useAddFavorite, useUserData, usePayVideo, useLikeVideo } from "../hooks/useWatch";
 import {
     Dialog,
     DialogContent,
@@ -30,6 +30,7 @@ export const EpisodeCard = ({ video, onClick, isFavorite, className }: EpisodeCa
     const [isInsufficientOpen, setIsInsufficientOpen] = useState(false);
     const { mutate: addFavorite, isPending: isFavoritePending } = useAddFavorite();
     const { mutate: payVideo, isPending: isPaying } = usePayVideo();
+    const { mutate: likeVideo, isPending: isLikePending } = useLikeVideo();
 
     const { data: userData } = useUserData();
 
@@ -51,6 +52,11 @@ export const EpisodeCard = ({ video, onClick, isFavorite, className }: EpisodeCa
     const handleFavoriteClick = (e: React.MouseEvent) => {
         e.stopPropagation();
         addFavorite(video.id.toString());
+    };
+
+    const handleLikeClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        likeVideo(video.id.toString());
     };
 
     const handleConfirmPay = () => {
@@ -112,16 +118,27 @@ export const EpisodeCard = ({ video, onClick, isFavorite, className }: EpisodeCa
                     </div>
                 </div>
 
-                {/* Likes Count Tag */}
-                <div className="absolute top-2 left-2 z-10 px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-sm border border-white/10 flex items-center gap-1.5 shadow-lg transition-all">
-                    <Heart className={cn(
-                        "size-3.5 transition-colors",
-                        video.user_has_liked ? "fill-snak-pink text-snak-pink" : "text-white"
-                    )} />
+                {/* Likes Count Button */}
+                <button
+                    onClick={handleLikeClick}
+                    disabled={isLikePending}
+                    className={cn(
+                        "absolute top-2 left-2 z-10 px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-sm border border-white/10 flex items-center gap-1.5 shadow-lg hover:bg-white/10 transition-all opacity-80 group-hover:opacity-100",
+                        video.user_has_liked && "border-snak-pink/50 bg-snak-pink/20 opacity-100"
+                    )}
+                >
+                    {isLikePending ? (
+                        <Loader2 className="size-3.5 text-white animate-spin" />
+                    ) : (
+                        <Heart className={cn(
+                            "size-3.5 transition-colors",
+                            video.user_has_liked ? "fill-snak-pink text-snak-pink" : "text-white"
+                        )} />
+                    )}
                     <span className="text-[10px] font-bold text-white">
                         {video.likes_count ?? 0}
                     </span>
-                </div>
+                </button>
 
                 {/* Info */}
                 <div className="absolute bottom-0 left-0 p-3 w-full flex items-end justify-between">

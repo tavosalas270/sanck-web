@@ -22,6 +22,14 @@ export interface Videos {
     user_has_liked: boolean;
 }
 
+export interface LikeVideoData {
+    video_id: string;
+}
+
+export interface LikeVideoResponse {
+    status: string
+}
+
 export interface Series {
     id: number;
     title: string;

@@ -1,15 +1,16 @@
 import { useInfiniteQuery, useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
-import { Videos, Series, Categories, Favorites } from '../schemas';
-import { 
-    getVideos, 
-    getSeries, 
-    getCategories, 
-    getFavorites, 
+import { Videos, Series, Categories, Favorites, LikeVideoResponse } from '../schemas';
+import {
+    getVideos,
+    getSeries,
+    getCategories,
+    getFavorites,
     addFavorite,
     getUserData,
     getMyPurchases,
     postPayVideo,
-    postSearchVideos
+    postSearchVideos,
+    postLikeVideo
 } from '../services';
 
 export const usePayVideo = () => {
@@ -150,5 +151,66 @@ export const useSearchVideos = (query?: string, category?: string) => {
         queryKey: ['search-videos'],
         queryFn: () => postSearchVideos(query, category),
         enabled: false, // The query will only be executed manually via refetch
+    });
+};
+
+export const useLikeVideo = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: postLikeVideo,
+        onSuccess: (response, videoId) => {
+            const isLiked = response.status === 'liked';
+            const likeDiff = isLiked ? 1 : -1;
+
+            // Actualizar caché de series
+            queryClient.setQueriesData({ queryKey: ['series'] }, (oldData: any) => {
+                if (!oldData?.pages) return oldData;
+                return {
+                    ...oldData,
+                    pages: oldData.pages.map((page: Series[]) =>
+                        page.map(serie => ({
+                            ...serie,
+                            videos: serie.videos.map(v => {
+                                if (v.id.toString() === videoId.toString()) {
+                                    // Evitar duplicar la operación si el estado ya coincide
+                                    if (v.user_has_liked === isLiked) return v;
+                                    return {
+                                        ...v,
+                                        user_has_liked: isLiked,
+                                        likes_count: Math.max(0, (v.likes_count || 0) + likeDiff)
+                                    };
+                                }
+                                return v;
+                            })
+                        }))
+                    )
+                };
+            });
+
+            // Actualizar caché de videos
+            queryClient.setQueriesData({ queryKey: ['videos'] }, (oldData: any) => {
+                if (!oldData?.pages) return oldData;
+                return {
+                    ...oldData,
+                    pages: oldData.pages.map((page: Videos[]) =>
+                        page.map(v => {
+                            if (v.id.toString() === videoId.toString()) {
+                                if (v.user_has_liked === isLiked) return v;
+                                return {
+                                    ...v,
+                                    user_has_liked: isLiked,
+                                    likes_count: Math.max(0, (v.likes_count || 0) + likeDiff)
+                                };
+                            }
+                            return v;
+                        })
+                    )
+                };
+            });
+
+            queryClient.invalidateQueries({ queryKey: ['series'] });
+            queryClient.invalidateQueries({ queryKey: ['videos'] });
+        }
     });
 };
