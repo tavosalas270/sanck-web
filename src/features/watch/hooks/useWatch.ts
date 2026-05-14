@@ -120,10 +120,19 @@ export const useAddFavorite = () => {
                 };
             });
 
+            // Actualizar caché de search-videos
+            queryClient.setQueriesData({ queryKey: ['search-videos'] }, (oldData: any) => {
+                if (!Array.isArray(oldData)) return oldData;
+                return oldData.map((v: Videos) =>
+                    v.id.toString() === videoId.toString() ? { ...v, is_favorite: isFav } : v
+                );
+            });
+
             // Invalidar queries para mantener sincronización general
             queryClient.invalidateQueries({ queryKey: ['favorites'] });
             queryClient.invalidateQueries({ queryKey: ['series'] });
             queryClient.invalidateQueries({ queryKey: ['videos'] });
+            queryClient.invalidateQueries({ queryKey: ['search-videos'] });
         }
     });
 };
@@ -235,9 +244,26 @@ export const useLikeVideo = () => {
                 };
             });
 
+            // Actualizar caché de search-videos
+            queryClient.setQueriesData({ queryKey: ['search-videos'] }, (oldData: any) => {
+                if (!Array.isArray(oldData)) return oldData;
+                return oldData.map((v: Videos) => {
+                    if (v.id.toString() === videoId.toString()) {
+                        if (v.user_has_liked === isLiked) return v;
+                        return {
+                            ...v,
+                            user_has_liked: isLiked,
+                            likes_count: Math.max(0, (v.likes_count || 0) + likeDiff)
+                        };
+                    }
+                    return v;
+                });
+            });
+
             queryClient.invalidateQueries({ queryKey: ['series'] });
             queryClient.invalidateQueries({ queryKey: ['videos'] });
             queryClient.invalidateQueries({ queryKey: ['favorites'] });
+            queryClient.invalidateQueries({ queryKey: ['search-videos'] });
         }
     });
 };
