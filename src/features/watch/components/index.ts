@@ -4,3 +4,4 @@ export * from './SeriesSection';
 export * from './VideoPlayerModal';
 export * from './VideosFiltered';
 export * from './FavoriteScreen';
+export * from './ComingSoon';

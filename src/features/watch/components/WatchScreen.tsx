@@ -7,12 +7,13 @@ import {
     SeriesSection, 
     VideosFiltered, 
     VideoPlayerModal, 
-    FavoriteScreen 
+    FavoriteScreen,
+    ComingSoon
 } from './index';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Videos } from '../schemas';
 import { Input } from '@/components/ui/input';
-import { Search, X, Filter, PlayCircle, Heart, Coins, Loader2 } from 'lucide-react';
+import { Search, X, Filter, PlayCircle, Heart, Coins, Loader2, Gamepad2, CircleDollarSign, MessageSquare } from 'lucide-react';
 import {
     Select,
     SelectContent,
@@ -34,6 +35,7 @@ export const WatchScreen = () => {
     const queryFavorites = useFavorites();
     const { data: userData, isLoading: isUserLoading } = useUserData();
     
+    const [activeTab, setActiveTab] = useState('watch');
     const [selectedVideo, setSelectedVideo] = useState<Videos | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
@@ -71,7 +73,7 @@ export const WatchScreen = () => {
 
     return (
         <main className="min-h-screen w-full bg-snak-purple-dark text-white pb-20 overflow-x-hidden relative">
-            <Tabs defaultValue="watch" className="w-full">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 {/* Header / Search Section Sticky */}
                 <header className="sticky top-0 z-50 w-full bg-snak-purple-dark/80 backdrop-blur-md border-b border-white/5 px-4 md:px-12 py-4">
                     <div className="max-w-[1440px] mx-auto space-y-6">
@@ -94,10 +96,10 @@ export const WatchScreen = () => {
                             </div>
                             
                             <div className="flex items-center gap-4 w-full sm:w-auto justify-center">
-                                <TabsList className="bg-snak-purple-medium/30 border border-white/10 p-1 h-11 rounded-full">
+                                <TabsList className="bg-snak-purple-medium/30 border border-white/10 p-1 h-11 rounded-full overflow-x-auto no-scrollbar max-w-full flex justify-start sm:justify-center">
                                     <TabsTrigger 
                                         value="watch" 
-                                        className="rounded-full px-6 data-[state=active]:bg-snak-pink data-[state=active]:text-white transition-all"
+                                        className="rounded-full px-6 data-[state=active]:bg-snak-pink data-[state=active]:text-white transition-all whitespace-nowrap"
                                     >
                                         <div className="flex items-center gap-2">
                                             <PlayCircle className="size-4" />
@@ -106,11 +108,38 @@ export const WatchScreen = () => {
                                     </TabsTrigger>
                                     <TabsTrigger 
                                         value="favorites" 
-                                        className="rounded-full px-6 data-[state=active]:bg-snak-pink data-[state=active]:text-white transition-all"
+                                        className="rounded-full px-6 data-[state=active]:bg-snak-pink data-[state=active]:text-white transition-all whitespace-nowrap"
                                     >
                                         <div className="flex items-center gap-2">
                                             <Heart className="size-4" />
                                             <span>Favorites</span>
+                                        </div>
+                                    </TabsTrigger>
+                                    <TabsTrigger 
+                                        value="play" 
+                                        className="rounded-full px-6 data-[state=active]:bg-snak-pink data-[state=active]:text-white transition-all whitespace-nowrap"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <Gamepad2 className="size-4" />
+                                            <span>Play</span>
+                                        </div>
+                                    </TabsTrigger>
+                                    <TabsTrigger 
+                                        value="trade" 
+                                        className="rounded-full px-6 data-[state=active]:bg-snak-pink data-[state=active]:text-white transition-all whitespace-nowrap"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <CircleDollarSign className="size-4" />
+                                            <span>Trade</span>
+                                        </div>
+                                    </TabsTrigger>
+                                    <TabsTrigger 
+                                        value="hang" 
+                                        className="rounded-full px-6 data-[state=active]:bg-snak-pink data-[state=active]:text-white transition-all whitespace-nowrap"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <MessageSquare className="size-4" />
+                                            <span>Hang</span>
                                         </div>
                                     </TabsTrigger>
                                 </TabsList>
@@ -133,79 +162,81 @@ export const WatchScreen = () => {
                         </div>
 
                         {/* Bottom Row: Filters */}
-                        <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
-                            {/* Input de Búsqueda */}
-                            <div className="relative flex-1 w-full group">
-                                <button 
-                                    onClick={() => searchVideos()}
-                                    className="absolute left-2 top-1/2 -translate-y-1/2 flex items-center justify-center p-1.5 rounded-full hover:bg-white/10 transition-colors z-10"
-                                    title="Buscar"
-                                >
-                                    <Search className="size-4 text-zinc-500 group-focus-within:text-snak-pink transition-colors" />
-                                </button>
-                                <Input
-                                    placeholder="Buscar por título..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter') {
-                                            searchVideos();
-                                        }
-                                    }}
-                                    className="pl-10 pr-10 bg-snak-purple-medium/20 border-white/10 focus:border-snak-pink/50 focus:ring-snak-pink/20 transition-all rounded-full h-11"
-                                />
-                                {searchQuery && (
+                        {(activeTab === 'watch' || activeTab === 'favorites') && (
+                            <div className="flex flex-col sm:flex-row items-center gap-3 w-full animate-in fade-in slide-in-from-top-2 duration-300">
+                                {/* Input de Búsqueda */}
+                                <div className="relative flex-1 w-full group">
                                     <button 
-                                        onClick={() => setSearchQuery('')}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 size-5 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors"
+                                        onClick={() => searchVideos()}
+                                        className="absolute left-2 top-1/2 -translate-y-1/2 flex items-center justify-center p-1.5 rounded-full hover:bg-white/10 transition-colors z-10"
+                                        title="Buscar"
                                     >
-                                        <X className="size-3 text-zinc-400" />
+                                        <Search className="size-4 text-zinc-500 group-focus-within:text-snak-pink transition-colors" />
+                                    </button>
+                                    <Input
+                                        placeholder="Buscar por título..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                searchVideos();
+                                            }
+                                        }}
+                                        className="pl-10 pr-10 bg-snak-purple-medium/20 border-white/10 focus:border-snak-pink/50 focus:ring-snak-pink/20 transition-all rounded-full h-11"
+                                    />
+                                    {searchQuery && (
+                                        <button 
+                                            onClick={() => setSearchQuery('')}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 size-5 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors"
+                                        >
+                                            <X className="size-3 text-zinc-400" />
+                                        </button>
+                                    )}
+                                </div>
+
+                                {/* Select de Categoría */}
+                                <div className="w-full sm:w-48">
+                                    <Select 
+                                        key={selectedCategoryId}
+                                        value={selectedCategoryId} 
+                                        onValueChange={setSelectedCategoryId}
+                                    >
+                                        <SelectTrigger className="bg-snak-purple-medium/20 border-white/10 rounded-full h-11 focus:ring-snak-pink/20">
+                                            <div className="flex items-center gap-2">
+                                                <Filter className="size-3 text-snak-blue-sky" />
+                                                <SelectValue placeholder="Categoría" />
+                                            </div>
+                                        </SelectTrigger>
+                                        <SelectContent className="bg-snak-purple-dark border-white/10 text-white">
+                                            <SelectItem value="all" className="focus:bg-snak-pink focus:text-white">Todas</SelectItem>
+                                            {categories.map((cat) => (
+                                                <SelectItem 
+                                                    key={cat.id} 
+                                                    value={cat.id.toString()}
+                                                    className="focus:bg-snak-pink focus:text-white"
+                                                >
+                                                    {cat.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                {/* Botón Reset */}
+                                {(searchQuery.length > 0 || selectedCategoryId !== '') && (
+                                    <button
+                                        onClick={() => {
+                                            setSearchQuery('');
+                                            setSelectedCategoryId('');
+                                            queryClient.resetQueries({ queryKey: ['search-videos'] });
+                                        }}
+                                        className="text-xs text-snak-pink hover:text-white transition-colors font-bold uppercase tracking-wider px-2"
+                                    >
+                                        Limpiar
                                     </button>
                                 )}
                             </div>
-
-                            {/* Select de Categoría */}
-                            <div className="w-full sm:w-48">
-                                <Select 
-                                    key={selectedCategoryId}
-                                    value={selectedCategoryId} 
-                                    onValueChange={setSelectedCategoryId}
-                                >
-                                    <SelectTrigger className="bg-snak-purple-medium/20 border-white/10 rounded-full h-11 focus:ring-snak-pink/20">
-                                        <div className="flex items-center gap-2">
-                                            <Filter className="size-3 text-snak-blue-sky" />
-                                            <SelectValue placeholder="Categoría" />
-                                        </div>
-                                    </SelectTrigger>
-                                    <SelectContent className="bg-snak-purple-dark border-white/10 text-white">
-                                        <SelectItem value="all" className="focus:bg-snak-pink focus:text-white">Todas</SelectItem>
-                                        {categories.map((cat) => (
-                                            <SelectItem 
-                                                key={cat.id} 
-                                                value={cat.id.toString()}
-                                                className="focus:bg-snak-pink focus:text-white"
-                                            >
-                                                {cat.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            {/* Botón Reset */}
-                            {(searchQuery.length > 0 || selectedCategoryId !== '') && (
-                                <button
-                                    onClick={() => {
-                                        setSearchQuery('');
-                                        setSelectedCategoryId('');
-                                        queryClient.resetQueries({ queryKey: ['search-videos'] });
-                                    }}
-                                    className="text-xs text-snak-pink hover:text-white transition-colors font-bold uppercase tracking-wider px-2"
-                                >
-                                    Limpiar
-                                </button>
-                            )}
-                        </div>
+                        )}
                     </div>
                 </header>
 
@@ -254,6 +285,18 @@ export const WatchScreen = () => {
 
                 <TabsContent value="favorites" className="mt-0 outline-none">
                     <FavoriteScreen />
+                </TabsContent>
+
+                <TabsContent value="play" className="mt-0 outline-none w-full">
+                    <ComingSoon />
+                </TabsContent>
+
+                <TabsContent value="trade" className="mt-0 outline-none w-full">
+                    <ComingSoon />
+                </TabsContent>
+
+                <TabsContent value="hang" className="mt-0 outline-none w-full">
+                    <ComingSoon />
                 </TabsContent>
             </Tabs>
 
