@@ -88,7 +88,7 @@ export const WatchScreen = () => {
                                 <div className="flex items-center gap-3">
                                     {/* Download for Android Button (Mobile/Tablet) */}
                                     <Button asChild className="flex md:hidden rounded-full bg-snak-pink hover:bg-snak-pink/90 text-white border-none font-bold text-xs px-3 h-8 shadow-[0_0_15px_rgba(191,15,180,0.3)] transition-all">
-                                        <a href="/api/download">
+                                        <a href="/download-apk">
                                             <Smartphone className="size-3.5" />
                                             <span>Download APK</span>
                                         </a>
@@ -109,7 +109,7 @@ export const WatchScreen = () => {
                             <div className="flex items-center gap-4 w-full sm:w-auto justify-center">
                                 {/* Download for Android Button (Desktop) */}
                                 <Button asChild className="hidden md:flex rounded-full bg-snak-pink hover:bg-snak-pink/90 text-white font-bold px-4 h-11 border-none shadow-[0_0_20px_rgba(191,15,180,0.3)] transition-all">
-                                    <a href="/api/download">
+                                    <a href="/download-apk">
                                         <Smartphone className="size-4" />
                                         <span>Download for Android</span>
                                     </a>
