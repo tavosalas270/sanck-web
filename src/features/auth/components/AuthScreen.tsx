@@ -65,7 +65,7 @@ export const AuthScreen = () => {
           </Button>
         </HelpModal>
         <p className="text-[10px] tracking-wider text-white/80">
-          © 2023 SNAK. All rights reserved.
+          © 2026 SNAK. All rights reserved.
         </p>
       </div>
     </div>

@@ -10,10 +10,11 @@ import {
     FavoriteScreen,
     ComingSoon
 } from './index';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Videos } from '../schemas';
 import { Input } from '@/components/ui/input';
-import { Search, X, Filter, PlayCircle, Heart, Coins, Loader2, Gamepad2, CircleDollarSign, MessageSquare } from 'lucide-react';
+import { Search, X, Filter, PlayCircle, Heart, Coins, Loader2, Gamepad2, CircleDollarSign, MessageSquare, Smartphone } from 'lucide-react';
 import {
     Select,
     SelectContent,
@@ -84,18 +85,35 @@ export const WatchScreen = () => {
                                     Explorar
                                 </h1>
 
-                                {/* Tokens Balance (Mobile) */}
-                                <div className="flex sm:hidden items-center gap-2 bg-snak-pink/20 border border-snak-pink/30 px-3 py-1.5 rounded-full shadow-[0_0_15px_rgba(191,15,180,0.2)]">
-                                    <Coins className="size-4 text-snak-pink animate-pulse" />
-                                    {isUserLoading ? (
-                                        <Loader2 className="size-3 animate-spin text-snak-pink" />
-                                    ) : (
-                                        <span className="text-sm font-black text-white">{userData?.tokens || 0}</span>
-                                    )}
+                                <div className="flex items-center gap-3">
+                                    {/* Download for Android Button (Mobile/Tablet) */}
+                                    <Button asChild className="flex md:hidden rounded-full bg-snak-pink hover:bg-snak-pink/90 text-white border-none font-bold text-xs px-3 h-8 shadow-[0_0_15px_rgba(191,15,180,0.3)] transition-all">
+                                        <a href="/api/download">
+                                            <Smartphone className="size-3.5" />
+                                            <span>Download APK</span>
+                                        </a>
+                                    </Button>
+
+                                    {/* Tokens Balance (Mobile) */}
+                                    <div className="flex sm:hidden items-center gap-2 bg-snak-pink/20 border border-snak-pink/30 px-3 py-1.5 rounded-full shadow-[0_0_15px_rgba(191,15,180,0.2)]">
+                                        <Coins className="size-4 text-snak-pink animate-pulse" />
+                                        {isUserLoading ? (
+                                            <Loader2 className="size-3 animate-spin text-snak-pink" />
+                                        ) : (
+                                            <span className="text-sm font-black text-white">{userData?.tokens || 0}</span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                             
                             <div className="flex items-center gap-4 w-full sm:w-auto justify-center">
+                                {/* Download for Android Button (Desktop) */}
+                                <Button asChild className="hidden md:flex rounded-full bg-snak-pink hover:bg-snak-pink/90 text-white font-bold px-4 h-11 border-none shadow-[0_0_20px_rgba(191,15,180,0.3)] transition-all">
+                                    <a href="/api/download">
+                                        <Smartphone className="size-4" />
+                                        <span>Download for Android</span>
+                                    </a>
+                                </Button>
                                 <TabsList className="bg-snak-purple-medium/30 border border-white/10 p-1 h-11 rounded-full overflow-x-auto no-scrollbar max-w-full flex justify-start sm:justify-center">
                                     <TabsTrigger 
                                         value="watch" 
