@@ -180,7 +180,7 @@ export const WatchScreen = () => {
                         </div>
 
                         {/* Bottom Row: Filters */}
-                        {(activeTab === 'watch' || activeTab === 'favorites') && (
+                        {activeTab === 'watch' && (
                             <div className="flex flex-col sm:flex-row items-center gap-3 w-full animate-in fade-in slide-in-from-top-2 duration-300">
                                 {/* Input de Búsqueda */}
                                 <div className="relative flex-1 w-full group">
