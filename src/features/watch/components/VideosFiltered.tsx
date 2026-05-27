@@ -21,8 +21,8 @@ export const VideosFiltered = ({ series, searchQuery, selectedCategoryId, apiSea
         if (!searchQuery.trim() && !selectedCategoryId) return [];
 
         const query = searchQuery.toLowerCase();
-        const catId = selectedCategoryId ? parseInt(selectedCategoryId) : null;
-        
+        const catId = selectedCategoryId ? selectedCategoryId.toString() : null;
+
         // 1. Extraemos todos los videos locales de todas las series cargadas
         const localVideos: Videos[] = [];
         const localSeenIds = new Set<number>();
@@ -56,7 +56,7 @@ export const VideosFiltered = ({ series, searchQuery, selectedCategoryId, apiSea
         // 2. Filtramos localmente solo los videos que ya teníamos en caché (series e infiniteQuery de videos)
         const filteredLocal = localVideos.filter(v => {
             const matchesQuery = query ? v.title.toLowerCase().includes(query) : true;
-            const matchesCategory = catId ? v.category_id === catId : true;
+            const matchesCategory = catId ? v.category_name === catId : true;
             return matchesQuery && matchesCategory;
         });
 

@@ -158,10 +158,11 @@ export const useVideos = (serie: number, initialPage: number = 1, enabled: boole
 };
 
 export const useSearchVideos = (query?: string, category?: string) => {
+    const hasFilters = (query && query.trim().length > 0) || !!category;
     return useQuery({
-        queryKey: ['search-videos'],
+        queryKey: ['search-videos', query, category],
         queryFn: () => postSearchVideos(query, category),
-        enabled: false, // The query will only be executed manually via refetch
+        enabled: !!hasFilters,
     });
 };
 

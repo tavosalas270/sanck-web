@@ -3,10 +3,10 @@
 import { useState, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSeries, useCategories, useFavorites, useUserData, useSearchVideos } from '../hooks/useWatch';
-import { 
-    SeriesSection, 
-    VideosFiltered, 
-    VideoPlayerModal, 
+import {
+    SeriesSection,
+    VideosFiltered,
+    VideoPlayerModal,
     FavoriteScreen,
     ComingSoon
 } from './index';
@@ -35,22 +35,22 @@ export const WatchScreen = () => {
     const queryCategories = useCategories();
     const queryFavorites = useFavorites();
     const { data: userData, isLoading: isUserLoading } = useUserData();
-    
+
     const [activeTab, setActiveTab] = useState('watch');
     const [selectedVideo, setSelectedVideo] = useState<Videos | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
 
-    const { data: searchResults, refetch: searchVideos } = useSearchVideos(
-        searchQuery, 
-        selectedCategoryId === 'all' ? undefined : selectedCategoryId
+    const { data: searchResults } = useSearchVideos(
+        searchQuery.trim() || undefined,
+        selectedCategoryId === '' || selectedCategoryId === 'all' ? undefined : selectedCategoryId
     );
 
     const handleEpisodeClick = (video: Videos) => {
         setSelectedVideo(video);
     };
 
-    const isFiltering = searchQuery.length > 0 || (selectedCategoryId !== '' && selectedCategoryId !== 'all');
+    const isFiltering = (searchQuery.trim().length > 0) || (selectedCategoryId !== '' && selectedCategoryId !== 'all');
 
     if (querySeries.isLoading) {
         return (
@@ -105,7 +105,7 @@ export const WatchScreen = () => {
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div className="flex items-center gap-4 w-full sm:w-auto justify-center">
                                 {/* Download for Android Button (Desktop) */}
                                 <Button asChild className="hidden md:flex rounded-full bg-snak-pink hover:bg-snak-pink/90 text-white font-bold px-4 h-11 border-none shadow-[0_0_20px_rgba(191,15,180,0.3)] transition-all">
@@ -115,8 +115,8 @@ export const WatchScreen = () => {
                                     </a>
                                 </Button>
                                 <TabsList className="bg-snak-purple-medium/30 border border-white/10 p-1 h-11 rounded-full overflow-x-auto no-scrollbar max-w-full flex justify-start sm:justify-center">
-                                    <TabsTrigger 
-                                        value="watch" 
+                                    <TabsTrigger
+                                        value="watch"
                                         className="rounded-full px-6 data-[state=active]:bg-snak-pink data-[state=active]:text-white transition-all whitespace-nowrap"
                                     >
                                         <div className="flex items-center gap-2">
@@ -124,8 +124,8 @@ export const WatchScreen = () => {
                                             <span>Watch</span>
                                         </div>
                                     </TabsTrigger>
-                                    <TabsTrigger 
-                                        value="favorites" 
+                                    <TabsTrigger
+                                        value="favorites"
                                         className="rounded-full px-6 data-[state=active]:bg-snak-pink data-[state=active]:text-white transition-all whitespace-nowrap"
                                     >
                                         <div className="flex items-center gap-2">
@@ -133,8 +133,8 @@ export const WatchScreen = () => {
                                             <span>Favorites</span>
                                         </div>
                                     </TabsTrigger>
-                                    <TabsTrigger 
-                                        value="play" 
+                                    <TabsTrigger
+                                        value="play"
                                         className="rounded-full px-6 data-[state=active]:bg-snak-pink data-[state=active]:text-white transition-all whitespace-nowrap"
                                     >
                                         <div className="flex items-center gap-2">
@@ -142,8 +142,8 @@ export const WatchScreen = () => {
                                             <span>Play</span>
                                         </div>
                                     </TabsTrigger>
-                                    <TabsTrigger 
-                                        value="trade" 
+                                    <TabsTrigger
+                                        value="trade"
                                         className="rounded-full px-6 data-[state=active]:bg-snak-pink data-[state=active]:text-white transition-all whitespace-nowrap"
                                     >
                                         <div className="flex items-center gap-2">
@@ -151,8 +151,8 @@ export const WatchScreen = () => {
                                             <span>Trade</span>
                                         </div>
                                     </TabsTrigger>
-                                    <TabsTrigger 
-                                        value="hang" 
+                                    <TabsTrigger
+                                        value="hang"
                                         className="rounded-full px-6 data-[state=active]:bg-snak-pink data-[state=active]:text-white transition-all whitespace-nowrap"
                                     >
                                         <div className="flex items-center gap-2">
@@ -184,8 +184,7 @@ export const WatchScreen = () => {
                             <div className="flex flex-col sm:flex-row items-center gap-3 w-full animate-in fade-in slide-in-from-top-2 duration-300">
                                 {/* Input de Búsqueda */}
                                 <div className="relative flex-1 w-full group">
-                                    <button 
-                                        onClick={() => searchVideos()}
+                                    <button
                                         className="absolute left-2 top-1/2 -translate-y-1/2 flex items-center justify-center p-1.5 rounded-full hover:bg-white/10 transition-colors z-10"
                                         title="Buscar"
                                     >
@@ -195,15 +194,10 @@ export const WatchScreen = () => {
                                         placeholder="Buscar por título..."
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter') {
-                                                searchVideos();
-                                            }
-                                        }}
                                         className="pl-10 pr-10 bg-snak-purple-medium/20 border-white/10 focus:border-snak-pink/50 focus:ring-snak-pink/20 transition-all rounded-full h-11"
                                     />
                                     {searchQuery && (
-                                        <button 
+                                        <button
                                             onClick={() => setSearchQuery('')}
                                             className="absolute right-3 top-1/2 -translate-y-1/2 size-5 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors"
                                         >
@@ -214,9 +208,8 @@ export const WatchScreen = () => {
 
                                 {/* Select de Categoría */}
                                 <div className="w-full sm:w-48">
-                                    <Select 
-                                        key={selectedCategoryId}
-                                        value={selectedCategoryId} 
+                                    <Select
+                                        value={selectedCategoryId}
                                         onValueChange={setSelectedCategoryId}
                                     >
                                         <SelectTrigger className="bg-snak-purple-medium/20 border-white/10 rounded-full h-11 focus:ring-snak-pink/20">
@@ -228,9 +221,9 @@ export const WatchScreen = () => {
                                         <SelectContent className="bg-snak-purple-dark border-white/10 text-white">
                                             <SelectItem value="all" className="focus:bg-snak-pink focus:text-white">Todas</SelectItem>
                                             {categories.map((cat) => (
-                                                <SelectItem 
-                                                    key={cat.id} 
-                                                    value={cat.id.toString()}
+                                                <SelectItem
+                                                    key={cat.id}
+                                                    value={cat.name.toString()}
                                                     className="focus:bg-snak-pink focus:text-white"
                                                 >
                                                     {cat.name}
@@ -261,7 +254,7 @@ export const WatchScreen = () => {
                 <TabsContent value="watch" className="mt-0 outline-none">
                     <div className="max-w-[1440px] mx-auto p-4 md:p-12 space-y-16">
                         {isFiltering ? (
-                            <VideosFiltered 
+                            <VideosFiltered
                                 series={seriesData}
                                 searchQuery={searchQuery}
                                 selectedCategoryId={selectedCategoryId === 'all' ? undefined : selectedCategoryId}
