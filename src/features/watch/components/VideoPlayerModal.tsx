@@ -28,6 +28,9 @@ export const VideoPlayerModal = ({ video, onClose }: VideoPlayerModalProps) => {
     const [showControls, setShowControls] = useState(true);
     const videoRef = useRef<HTMLVideoElement | null>(null);
     const controlsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const justExitedFullscreenRef = useRef(false);
+    const playbackTimeRef = useRef<number>(0);
+    const isPausedRef = useRef<boolean>(false);
 
     const handleSendComment = (parentId?: number) => {
         const content = parentId ? replyTexts[parentId] : commentText;
@@ -68,6 +71,40 @@ export const VideoPlayerModal = ({ video, onClose }: VideoPlayerModalProps) => {
         controlsTimerRef.current = setTimeout(() => setShowControls(false), 3000);
     };
 
+    const enterFullscreen = () => {
+        if (videoRef.current) {
+            playbackTimeRef.current = videoRef.current.currentTime;
+            isPausedRef.current = videoRef.current.paused;
+        }
+        setIsCustomFullscreen(true);
+    };
+
+    const exitFullscreen = () => {
+        if (videoRef.current) {
+            playbackTimeRef.current = videoRef.current.currentTime;
+            isPausedRef.current = videoRef.current.paused;
+        }
+        setIsCustomFullscreen(false);
+        justExitedFullscreenRef.current = true;
+        setTimeout(() => {
+            justExitedFullscreenRef.current = false;
+        }, 150);
+    };
+
+    // Sync video play state and currentTime when toggling custom fullscreen
+    useEffect(() => {
+        if (videoRef.current) {
+            videoRef.current.currentTime = playbackTimeRef.current;
+            if (isPausedRef.current) {
+                videoRef.current.pause();
+            } else {
+                videoRef.current.play().catch((err) => {
+                    console.warn("Autoplay / resume failed:", err);
+                });
+            }
+        }
+    }, [isCustomFullscreen]);
+
     useEffect(() => {
         if (isCustomFullscreen) {
             resetControlsTimer();
@@ -85,7 +122,7 @@ export const VideoPlayerModal = ({ video, onClose }: VideoPlayerModalProps) => {
     useEffect(() => {
         if (!isCustomFullscreen) return;
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') setIsCustomFullscreen(false);
+            if (e.key === 'Escape') exitFullscreen();
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
@@ -105,9 +142,10 @@ export const VideoPlayerModal = ({ video, onClose }: VideoPlayerModalProps) => {
     // Overlay de fullscreen custom — montado en <body> via portal para evitar z-index del Dialog
     const customFullscreenOverlay = isCustomFullscreen ? createPortal(
         <div
-            className="fixed inset-0 z-[9999] bg-black flex items-center justify-center"
+            className="fixed inset-0 z-[9999] bg-black flex items-center justify-center pointer-events-auto"
             onClick={resetControlsTimer}
             onTouchStart={resetControlsTimer}
+            onMouseMove={resetControlsTimer}
         >
             <video
                 ref={videoRef}
@@ -123,10 +161,11 @@ export const VideoPlayerModal = ({ video, onClose }: VideoPlayerModalProps) => {
 
             {/* Botón salir del fullscreen */}
             <button
-                onClick={() => setIsCustomFullscreen(false)}
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={(e) => { e.stopPropagation(); e.preventDefault(); exitFullscreen(); }}
                 className={cn(
-                    "absolute top-4 right-4 size-10 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center transition-all duration-300",
-                    showControls ? "opacity-100" : "opacity-0 pointer-events-none"
+                    "absolute top-4 right-4 size-10 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center transition-all duration-300 z-[10000]",
+                    showControls ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
                 )}
             >
                 <Minimize className="size-5 text-white" />
@@ -139,8 +178,25 @@ export const VideoPlayerModal = ({ video, onClose }: VideoPlayerModalProps) => {
         <>
             {customFullscreenOverlay}
 
-            <Dialog open={!!video} onOpenChange={onClose}>
-                <DialogContent className="max-w-5xl p-0 bg-black/90 border-snak-purple-medium backdrop-blur-xl max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-snak-pink">
+            <Dialog 
+                open={!!video} 
+                onOpenChange={(open) => {
+                    if (!open) {
+                        if (isCustomFullscreen || justExitedFullscreenRef.current) {
+                            exitFullscreen();
+                        } else {
+                            onClose();
+                        }
+                    }
+                }}
+            >
+                <DialogContent
+                    className="max-w-5xl p-0 bg-black/90 border-snak-purple-medium backdrop-blur-xl max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-snak-pink"
+                    onPointerDownOutside={(e) => e.preventDefault()}
+                    onInteractOutside={(e) => e.preventDefault()}
+                    onFocusOutside={(e) => e.preventDefault()}
+                    onEscapeKeyDown={(e) => { if (isCustomFullscreen) e.preventDefault(); }}
+                >
                     <VisuallyHidden>
                         <DialogHeader>
                             <DialogTitle>{video.title}</DialogTitle>
@@ -163,11 +219,20 @@ export const VideoPlayerModal = ({ video, onClose }: VideoPlayerModalProps) => {
                             </video>
                         )}
 
-                        {/* Botón fullscreen custom — reemplaza el nativo */}
+                        {/* Botón cerrar modal — solo visible en móvil */}
+                        <button
+                            onClick={onClose}
+                            className="absolute top-2 right-2 size-8 rounded-full bg-black/70 backdrop-blur-sm flex md:hidden items-center justify-center touch-manipulation z-10"
+                            title="Cerrar"
+                        >
+                            <X className="size-4 text-white" />
+                        </button>
+
+                        {/* Botón fullscreen custom — siempre visible en móvil, hover en desktop */}
                         {!isCustomFullscreen && (
                             <button
-                                onClick={() => setIsCustomFullscreen(true)}
-                                className="absolute bottom-12 right-3 size-8 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
+                                onClick={enterFullscreen}
+                                className="absolute bottom-12 right-3 size-9 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 focus:opacity-100 transition-opacity touch-manipulation"
                                 title="Pantalla completa"
                             >
                                 <Maximize className="size-4 text-white" />
