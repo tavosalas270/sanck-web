@@ -57,6 +57,19 @@ export const VideoPlayerModal = ({ video, onClose }: VideoPlayerModalProps) => {
 
     // Bloquear la orientación actual al entrar en fullscreen (evita que Chrome fuerce landscape)
     const videoRef = useRef<HTMLVideoElement | null>(null);
+    // Guardamos el ángulo ANTES de que Chrome lo cambie al entrar en fullscreen
+    const preFullscreenAngleRef = useRef<number>(screen.orientation?.angle ?? 0);
+
+    useEffect(() => {
+        // Actualizar el ángulo guardado solo cuando NO estamos en fullscreen
+        const handleOrientationChange = () => {
+            if (!document.fullscreenElement) {
+                preFullscreenAngleRef.current = screen.orientation?.angle ?? 0;
+            }
+        };
+        screen.orientation?.addEventListener('change', handleOrientationChange);
+        return () => screen.orientation?.removeEventListener('change', handleOrientationChange);
+    }, []);
 
     useEffect(() => {
         const videoEl = videoRef.current;
@@ -71,10 +84,11 @@ export const VideoPlayerModal = ({ video, onClose }: VideoPlayerModalProps) => {
 
             if (isFullscreen) {
                 try {
-                    // Leer la orientación en la que está el teléfono AHORA y bloquearla
-                    const currentAngle = screen.orientation?.angle ?? 0;
-                    const isPortrait = currentAngle === 0 || currentAngle === 180;
-                    const lockType = isPortrait ? 'portrait' : 'landscape';
+                    // Usamos el ángulo guardado ANTES de entrar en fullscreen
+                    // (no el actual, porque Chrome ya rotó el teléfono para este momento)
+                    const preAngle = preFullscreenAngleRef.current;
+                    const wasPortrait = preAngle === 0 || preAngle === 180;
+                    const lockType = wasPortrait ? 'portrait' : 'landscape';
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     await (screen.orientation as any)?.lock?.(lockType);
                 } catch {
@@ -83,6 +97,8 @@ export const VideoPlayerModal = ({ video, onClose }: VideoPlayerModalProps) => {
             } else {
                 try {
                     screen.orientation?.unlock?.();
+                    // Al salir, sincronizar con la orientación real del teléfono
+                    preFullscreenAngleRef.current = screen.orientation?.angle ?? 0;
                 } catch {
                     // Ignorar
                 }
