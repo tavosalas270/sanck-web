@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Videos } from "../schemas";
 import { cn, formatUrl } from "@/lib/utils";
@@ -55,6 +55,50 @@ export const VideoPlayerModal = ({ video, onClose }: VideoPlayerModalProps) => {
         setLikesCount(video.likes_count);
     }, [video]);
 
+    // Bloquear la orientación actual al entrar en fullscreen (evita que Chrome fuerce landscape)
+    const videoRef = useRef<HTMLVideoElement | null>(null);
+
+    useEffect(() => {
+        const videoEl = videoRef.current;
+        if (!videoEl) return;
+
+        const handleFullscreenChange = async () => {
+            const isFullscreen = !!(
+                document.fullscreenElement ||
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (document as any).webkitFullscreenElement
+            );
+
+            if (isFullscreen) {
+                try {
+                    // Leer la orientación en la que está el teléfono AHORA y bloquearla
+                    const currentAngle = screen.orientation?.angle ?? 0;
+                    const isPortrait = currentAngle === 0 || currentAngle === 180;
+                    const lockType = isPortrait ? 'portrait' : 'landscape';
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    await (screen.orientation as any)?.lock?.(lockType);
+                } catch {
+                    // API no soportada en este navegador — sin efecto
+                }
+            } else {
+                try {
+                    screen.orientation?.unlock?.();
+                } catch {
+                    // Ignorar
+                }
+            }
+        };
+
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+
+        return () => {
+            document.removeEventListener('fullscreenchange', handleFullscreenChange);
+            document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+            try { screen.orientation?.unlock?.(); } catch { /* noop */ }
+        };
+    }, [video]);
+
     const handleLikeClick = () => {
         likeVideo(video.id.toString(), {
             onSuccess: (response) => {
@@ -91,6 +135,7 @@ export const VideoPlayerModal = ({ video, onClose }: VideoPlayerModalProps) => {
                 <div className="relative aspect-video w-full flex items-center justify-center bg-black">
                     {formatUrl(video.video_path) && (
                         <video
+                            ref={videoRef}
                             src={formatUrl(video.video_path)!}
                             controls
                             autoPlay
