@@ -191,7 +191,7 @@ export const WatchScreen = () => {
                                         <Search className="size-4 text-zinc-500 group-focus-within:text-snak-pink transition-colors" />
                                     </button>
                                     <Input
-                                        placeholder="Buscar por título..."
+                                        placeholder="Buscar por título del capitulo..."
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                         className="pl-10 pr-10 bg-snak-purple-medium/20 border-white/10 focus:border-snak-pink/50 focus:ring-snak-pink/20 transition-all rounded-full h-11"
