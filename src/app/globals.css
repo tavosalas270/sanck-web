@@ -189,3 +189,9 @@
   scrollbar-width: thin;
   scrollbar-color: var(--color-snak-pink) var(--color-snak-purple-dark);
 }
+
+/* Ocultar el botón de pantalla completa nativo en navegadores WebKit/Chromium (Chrome, Brave, Safari, iOS, etc.) */
+video::-webkit-media-controls-fullscreen-button,
+video::-internal-media-controls-fullscreen-button {
+  display: none !important;
+}

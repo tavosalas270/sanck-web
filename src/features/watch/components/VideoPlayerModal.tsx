@@ -26,8 +26,11 @@ export const VideoPlayerModal = ({ video, onClose }: VideoPlayerModalProps) => {
     const [replyTexts, setReplyTexts] = useState<Record<number, string>>({});
     const [isCustomFullscreen, setIsCustomFullscreen] = useState(false);
     const [showControls, setShowControls] = useState(true);
+    const [showNormalControls, setShowNormalControls] = useState(true);
+    const [isPaused, setIsPaused] = useState(false);
     const videoRef = useRef<HTMLVideoElement | null>(null);
     const controlsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const normalControlsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const justExitedFullscreenRef = useRef(false);
     const playbackTimeRef = useRef<number>(0);
     const isPausedRef = useRef<boolean>(false);
@@ -68,7 +71,17 @@ export const VideoPlayerModal = ({ video, onClose }: VideoPlayerModalProps) => {
     const resetControlsTimer = () => {
         setShowControls(true);
         if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current);
-        controlsTimerRef.current = setTimeout(() => setShowControls(false), 3000);
+        if (!videoRef.current?.paused) {
+            controlsTimerRef.current = setTimeout(() => setShowControls(false), 3000);
+        }
+    };
+
+    const resetNormalControlsTimer = () => {
+        setShowNormalControls(true);
+        if (normalControlsTimerRef.current) clearTimeout(normalControlsTimerRef.current);
+        if (!videoRef.current?.paused) {
+            normalControlsTimerRef.current = setTimeout(() => setShowNormalControls(false), 3000);
+        }
     };
 
     const enterFullscreen = () => {
@@ -105,6 +118,12 @@ export const VideoPlayerModal = ({ video, onClose }: VideoPlayerModalProps) => {
         }
     }, [isCustomFullscreen]);
 
+    // Handle normal and fullscreen controls visibility based on interactions or pause state
+    useEffect(() => {
+        resetControlsTimer();
+        resetNormalControlsTimer();
+    }, [isCustomFullscreen, isPaused]);
+
     useEffect(() => {
         if (isCustomFullscreen) {
             resetControlsTimer();
@@ -112,11 +131,15 @@ export const VideoPlayerModal = ({ video, onClose }: VideoPlayerModalProps) => {
             setShowControls(true);
             if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isCustomFullscreen]);
+
+    useEffect(() => {
         return () => {
             if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current);
+            if (normalControlsTimerRef.current) clearTimeout(normalControlsTimerRef.current);
         };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isCustomFullscreen]);
+    }, []);
 
     // Salir del fullscreen custom con botón Back del teléfono
     useEffect(() => {
@@ -155,20 +178,22 @@ export const VideoPlayerModal = ({ video, onClose }: VideoPlayerModalProps) => {
                 playsInline
                 className="w-full h-full object-contain"
                 controlsList="nodownload nofullscreen"
+                onPlay={() => setIsPaused(false)}
+                onPause={() => setIsPaused(true)}
             >
                 Tu navegador no soporta el elemento de video.
             </video>
 
-            {/* Botón salir del fullscreen */}
             <button
                 onPointerDown={(e) => e.stopPropagation()}
                 onClick={(e) => { e.stopPropagation(); e.preventDefault(); exitFullscreen(); }}
                 className={cn(
-                    "absolute top-4 right-4 size-10 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center transition-all duration-300 z-[10000]",
+                    "absolute bottom-14 right-4 size-8 flex items-center justify-center transition-all duration-300 z-[10000] touch-manipulation cursor-pointer",
                     showControls ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
                 )}
+                title="Salir de pantalla completa"
             >
-                <Minimize className="size-5 text-white" />
+                <Minimize className="size-5 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]" />
             </button>
         </div>,
         document.body
@@ -204,7 +229,12 @@ export const VideoPlayerModal = ({ video, onClose }: VideoPlayerModalProps) => {
                     </VisuallyHidden>
 
                     {/* Contenedor del video con botón fullscreen custom */}
-                    <div className="relative aspect-video w-full flex items-center justify-center bg-black group">
+                    <div 
+                        className="relative aspect-video w-full flex items-center justify-center bg-black group"
+                        onClick={resetNormalControlsTimer}
+                        onTouchStart={resetNormalControlsTimer}
+                        onMouseMove={resetNormalControlsTimer}
+                    >
                         {formatUrl(video.video_path) && !isCustomFullscreen && (
                             <video
                                 ref={videoRef}
@@ -214,6 +244,8 @@ export const VideoPlayerModal = ({ video, onClose }: VideoPlayerModalProps) => {
                                 playsInline
                                 className="w-full h-full object-contain"
                                 controlsList="nodownload nofullscreen"
+                                onPlay={() => setIsPaused(false)}
+                                onPause={() => setIsPaused(true)}
                             >
                                 Tu navegador no soporta el elemento de video.
                             </video>
@@ -228,14 +260,16 @@ export const VideoPlayerModal = ({ video, onClose }: VideoPlayerModalProps) => {
                             <X className="size-4 text-white" />
                         </button>
 
-                        {/* Botón fullscreen custom — siempre visible en móvil, hover en desktop */}
                         {!isCustomFullscreen && (
                             <button
                                 onClick={enterFullscreen}
-                                className="absolute bottom-12 right-3 size-9 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 focus:opacity-100 transition-opacity touch-manipulation"
+                                className={cn(
+                                    "absolute bottom-14 right-4 size-8 flex items-center justify-center transition-all duration-300 z-10 touch-manipulation cursor-pointer",
+                                    showNormalControls ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+                                )}
                                 title="Pantalla completa"
                             >
-                                <Maximize className="size-4 text-white" />
+                                <Maximize className="size-4 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]" />
                             </button>
                         )}
                     </div>
