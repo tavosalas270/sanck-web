@@ -75,12 +75,26 @@ export const VideoPlayerModal = ({ video, onClose }: VideoPlayerModalProps) => {
                     </DialogHeader>
                 </VisuallyHidden>
 
+                {/* Estilos globales para fullscreen: el video llena el viewport en cualquier orientación */}
+                <style>{`
+                    video:fullscreen,
+                    video:-webkit-full-screen {
+                        width: 100vw !important;
+                        height: 100vh !important;
+                        max-width: 100vw !important;
+                        max-height: 100vh !important;
+                        object-fit: contain !important;
+                        background: #000 !important;
+                    }
+                `}</style>
+
                 <div className="relative aspect-video w-full flex items-center justify-center bg-black">
                     {formatUrl(video.video_path) && (
                         <video
                             src={formatUrl(video.video_path)!}
                             controls
                             autoPlay
+                            playsInline
                             className="w-full h-full object-contain"
                             controlsList="nodownload"
                         >
@@ -138,7 +152,7 @@ export const VideoPlayerModal = ({ video, onClose }: VideoPlayerModalProps) => {
                         <h3 className="text-white font-heading text-sm md:text-base flex items-center gap-2">
                             Comentarios <span className="text-xs px-2 py-0.5 rounded-full bg-snak-purple-medium text-snak-blue-aqua font-sans font-bold">{comments?.length || 0}</span>
                         </h3>
-                        
+
                         {/* Input sugerido */}
                         <div className="flex gap-3 items-center">
                             <Avatar className="size-8 border border-white/10 shrink-0">
@@ -146,8 +160,8 @@ export const VideoPlayerModal = ({ video, onClose }: VideoPlayerModalProps) => {
                                     {userData?.username?.slice(0, 2)?.toUpperCase() || "TÚ"}
                                 </AvatarFallback>
                             </Avatar>
-                            <Input 
-                                placeholder="Escriba su comentario..." 
+                            <Input
+                                placeholder="Escriba su comentario..."
                                 value={commentText}
                                 onChange={(e) => setCommentText(e.target.value)}
                                 onKeyDown={(e) => {
@@ -227,7 +241,7 @@ export const VideoPlayerModal = ({ video, onClose }: VideoPlayerModalProps) => {
 
                                         {/* Input para responder a este comentario */}
                                         <div className="ml-11 mt-1 flex gap-2 items-center">
-                                            <Input 
+                                            <Input
                                                 placeholder={`Responder a @${comment.user_username}...`}
                                                 value={replyTexts[comment.id] || ""}
                                                 onChange={(e) => setReplyTexts(prev => ({ ...prev, [comment.id]: e.target.value }))}
