@@ -32,6 +32,7 @@ export const loginWithCredentials = async ({ email, username, password }: LoginP
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
     path: '/',
+    maxAge: 60 * 60, // 1 hora — ajusta según la config de Django
   });
   
   cookieStore.set('refresh', data.refresh, {
@@ -39,6 +40,7 @@ export const loginWithCredentials = async ({ email, username, password }: LoginP
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
     path: '/',
+    maxAge: 60 * 60 * 24 * 7, // 7 días — ajusta según la config de Django
   });
 
   return {

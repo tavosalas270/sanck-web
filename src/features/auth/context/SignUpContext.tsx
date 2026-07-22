@@ -21,7 +21,7 @@ interface SignUpLoginContextProps {
     setTabSelected: (tab: 'login' | 'sign') => void;
     subSectionSelected: SubSectionType;
     setSubSectionSelected: (section: SubSectionType) => void;
-    
+
     // Form Data States
     walletData: WalletSelectionData;
     setWalletData: (data: WalletSelectionData) => void;
@@ -38,7 +38,7 @@ interface SignUpLoginContextProps {
 const SignUpLoginContext = createContext<SignUpLoginContextProps | undefined>(undefined);
 
 export function SignUpLoginProvider({ children }: { children: ReactNode }) {
-    const [tabSelected, setTabSelected] = useState<'login' | 'sign'>('login');
+    const [tabSelected, setTabSelected] = useState<'login' | 'sign'>('sign');
     const [subSectionSelected, setSubSectionSelected] = useState<SubSectionType>('create');
     const [signUpStep, setSignUpStep] = useState<number>(1);
 
