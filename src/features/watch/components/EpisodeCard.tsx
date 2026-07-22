@@ -6,6 +6,7 @@ import { formatUrl } from "@/lib/utils";
 import { Play, Star, Loader2, Coins, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAddFavorite, useUserData, usePayVideo, useLikeVideo } from "../hooks/useWatch";
+import { trackPurchase, trackLike, trackFavorite } from '@/features/analytics';
 import {
     Dialog,
     DialogContent,
@@ -51,17 +52,31 @@ export const EpisodeCard = ({ video, onClick, isFavorite, className }: EpisodeCa
 
     const handleFavoriteClick = (e: React.MouseEvent) => {
         e.stopPropagation();
-        addFavorite(video.id.toString());
+        addFavorite(video.id.toString(), {
+            onSuccess: () => {
+                // ✅ Evento: Usuario agregó un video a favoritos
+                trackFavorite(video.title, video.id.toString());
+            }
+        });
     };
 
     const handleLikeClick = (e: React.MouseEvent) => {
         e.stopPropagation();
-        likeVideo(video.id.toString());
+        likeVideo(video.id.toString(), {
+            onSuccess: (response) => {
+                // ✅ Evento: Usuario dio like a un video (no se dispara al quitar el like)
+                if (response?.status === 'liked') {
+                    trackLike(video.title, video.id.toString());
+                }
+            }
+        });
     };
 
     const handleConfirmPay = () => {
         payVideo(video.id.toString(), {
             onSuccess: () => {
+                // ✅ Evento: Usuario compró un episodio con tokens
+                trackPurchase(video.cost, 'TOKENS', `Ep. ${video.episode_number} - ${video.title}`);
                 setIsConfirmOpen(false);
                 onClick(video);
             }

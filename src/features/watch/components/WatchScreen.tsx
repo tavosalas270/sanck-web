@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSeries, useCategories, useFavorites, useUserData, useSearchVideos } from '../hooks/useWatch';
 import {
@@ -28,6 +28,7 @@ import {
     TabsList,
     TabsTrigger,
 } from "@/components/ui/tabs";
+import { trackSearch } from '@/features/analytics';
 
 export const WatchScreen = () => {
     const queryClient = useQueryClient();
@@ -49,6 +50,20 @@ export const WatchScreen = () => {
     const handleEpisodeClick = (video: Videos) => {
         setSelectedVideo(video);
     };
+
+    // Dispara el evento Search con debounce de 1s para no rastrear cada tecla
+    const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    useEffect(() => {
+        if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+        if (searchQuery.trim().length > 0) {
+            searchDebounceRef.current = setTimeout(() => {
+                trackSearch(searchQuery.trim());
+            }, 1000);
+        }
+        return () => {
+            if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+        };
+    }, [searchQuery]);
 
     const isFiltering = (searchQuery.trim().length > 0) || (selectedCategoryId !== '' && selectedCategoryId !== 'all');
 

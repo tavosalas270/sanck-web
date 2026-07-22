@@ -15,6 +15,7 @@ import {
 import { walletSelectionSchema, emailLinkSchema, verificationCodeSchema, setCredentialsSchema, SignUpWizardValues } from '../schemas/signup.schema';
 import { useSignUpContext } from '../context';
 import { useSignUpForm } from '../hooks';
+import { trackRegistration } from '@/features/analytics';
 
 interface SignUpFlowProps {
   onLoginRedirect?: () => void;
@@ -111,12 +112,20 @@ export const SignUpFlow = ({ onLoginRedirect }: SignUpFlowProps) => {
         confirmPassword: data.confirmPassword!,
       });
 
-      // Aquí se llamaría a la mutación final de registro
-      signUpMutation.mutate({
-        username: data.username!,
-        email: linkEmailData.email,
-        password: data.password!,
-      });
+      // Disparar la mutación final de registro
+      signUpMutation.mutate(
+        {
+          username: data.username!,
+          email: linkEmailData.email,
+          password: data.password!,
+        },
+        {
+          onSuccess: () => {
+            // ✅ Evento: Usuario completó el registro
+            trackRegistration();
+          },
+        }
+      );
     }
 
     if (step < totalSteps) {

@@ -10,6 +10,7 @@ import { Heart, Loader2, Maximize, Minimize, X } from "lucide-react";
 import { useComments, useLikeVideo, usePostComment, useUserData } from "../hooks/useWatch";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { trackVideoView, trackComment } from '@/features/analytics';
 
 interface VideoPlayerModalProps {
     video: Videos;
@@ -34,6 +35,8 @@ export const VideoPlayerModal = ({ video, onClose }: VideoPlayerModalProps) => {
     const justExitedFullscreenRef = useRef(false);
     const playbackTimeRef = useRef<number>(0);
     const isPausedRef = useRef<boolean>(false);
+    // Ref para disparar ViewContent solo la primera vez que se reproduce el video
+    const hasTrackedPlayRef = useRef(false);
 
     const handleSendComment = (parentId?: number) => {
         const content = parentId ? replyTexts[parentId] : commentText;
@@ -54,6 +57,8 @@ export const VideoPlayerModal = ({ video, onClose }: VideoPlayerModalProps) => {
                     setReplyTexts(prev => ({ ...prev, [parentId]: "" }));
                 } else {
                     setCommentText("");
+                    // ✅ Evento: Usuario publicó un comentario (solo comentarios raíz, no replies)
+                    trackComment(video.title, video.id.toString());
                 }
             }
         });
@@ -244,7 +249,14 @@ export const VideoPlayerModal = ({ video, onClose }: VideoPlayerModalProps) => {
                                 playsInline
                                 className="w-full h-full object-contain"
                                 controlsList="nodownload nofullscreen"
-                                onPlay={() => setIsPaused(false)}
+                                onPlay={() => {
+                                    setIsPaused(false);
+                                    // ✅ Evento: Usuario reprodujo un video (solo la primera vez)
+                                    if (!hasTrackedPlayRef.current) {
+                                        hasTrackedPlayRef.current = true;
+                                        trackVideoView(video.title, [video.id.toString()]);
+                                    }
+                                }}
                                 onPause={() => setIsPaused(true)}
                             >
                                 Tu navegador no soporta el elemento de video.

@@ -8,6 +8,7 @@ import { loginSchema, LoginFormValues } from '../schemas';
 import { useLogin } from '../hooks';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { trackLogin } from '@/features/analytics';
 
 // Custom Resolver Seguro basado en safeParseAsync para evitar excepciones no capturadas en producción
 const safeZodResolver = (schema: z.ZodType<any, any>) => {
@@ -49,8 +50,10 @@ export const LoginForm = () => {
   const onSubmit = (data: LoginFormValues) => {
     login(data, {
       onSuccess: () => {
+        // ✅ Evento: Usuario inició sesión
+        trackLogin();
         router.push('/watch');
-      }
+      },
     });
   };
 
