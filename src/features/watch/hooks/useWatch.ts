@@ -12,7 +12,8 @@ import {
     postSearchVideos,
     postLikeVideo,
     getComments,
-    postCommentService
+    postCommentService,
+    getPlayVideo
 } from '../services';
 
 export const usePayVideo = () => {
@@ -316,5 +317,13 @@ export const usePostComment = () => {
             });
             queryClient.invalidateQueries({ queryKey: ['comments', videoId] });
         }
+    });
+};
+
+export const usePlayVideo = (videoId?: string, enabled: boolean = false) => {
+    return useQuery({
+        queryKey: ['play-video', videoId],
+        queryFn: () => getPlayVideo(videoId!),
+        enabled: !!videoId && enabled,
     });
 };

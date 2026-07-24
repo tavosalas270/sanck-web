@@ -1,6 +1,7 @@
 'use server';
 
 import { fetchApi } from '../../../utils';
+import { cookies } from 'next/headers';
 import { Videos, Series, Categories, Favorites, UserTokenData, LikeVideoResponse, PostComment, Comments } from '../schemas';
 
 export const getSeries = async (page: number = 1): Promise<Series[]> => {
@@ -147,4 +148,23 @@ export const postCommentService = async (comment: PostComment): Promise<Comments
 
     const data = await response.json();
     return data;
+};
+
+export const getPlayVideo = async (videoId: string): Promise<{id: string, title: string, video_path: string, accessToken?: string}> => {
+    const response = await fetchApi(`/api/videos/${videoId}/play/`, 'GET');
+
+    if (!response.ok) {
+        throw { status: response.status };
+    }
+
+    const data = await response.json();
+    
+    // Obtenemos el token para que el cliente pueda concatenarlo al src del video
+    const cookieStore = await cookies();
+    const accessToken = cookieStore.get('access')?.value;
+
+    return {
+        ...data,
+        accessToken
+    };
 };

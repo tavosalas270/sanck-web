@@ -49,6 +49,48 @@ export const loginWithCredentials = async ({ email, username, password }: LoginP
   }
 };
 
+export const refreshAuthToken = async (refreshVal?: string) => {
+  const cookieStore = await cookies();
+  const refresh = refreshVal || cookieStore.get('refresh')?.value;
+
+  if (!refresh) {
+    throw new Error("No refresh token available");
+  }
+
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+  const response = await fetch(`${baseUrl}/api/token/refresh/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ refresh }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Refresh token failed");
+  }
+
+  const data = await response.json();
+
+  cookieStore.set('access', data.access, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    path: '/',
+    maxAge: 60 * 60, // 1 hora
+  });
+  
+  cookieStore.set('refresh', data.refresh, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    path: '/',
+    maxAge: 60 * 60 * 24 * 7, // 7 días
+  });
+
+  return data;
+};
+
 export const signUp = async ({ username, email, password }: SignUpParams): Promise<SignUpResponse> => {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL;
   const response = await fetch(`${baseUrl}/api/users/`, {

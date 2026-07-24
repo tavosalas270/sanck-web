@@ -7,7 +7,7 @@ import { Videos } from "../schemas";
 import { cn, formatUrl } from "@/lib/utils";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Heart, Loader2, Maximize, Minimize, X } from "lucide-react";
-import { useComments, useLikeVideo, usePostComment, useUserData } from "../hooks/useWatch";
+import { usePlayVideo, useComments, useLikeVideo, usePostComment, useUserData } from "../hooks/useWatch";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { trackVideoView, trackComment } from '@/features/analytics';
@@ -18,10 +18,15 @@ interface VideoPlayerModalProps {
 }
 
 export const VideoPlayerModal = ({ video, onClose }: VideoPlayerModalProps) => {
+    const { data: playVideoData, isLoading: isLoadingPlayVideo } = usePlayVideo(video?.id?.toString(), !!video);
     const { mutate: likeVideo, isPending: isLikePending } = useLikeVideo();
     const { data: comments, isLoading: isLoadingComments } = useComments(video?.id?.toString());
     const { data: userData } = useUserData();
     const { mutate: postComment, isPending: isCommentPending } = usePostComment();
+
+    const videoUrl = playVideoData?.video_path 
+        ? formatUrl(playVideoData.video_path)
+        : "";
 
     const [commentText, setCommentText] = useState("");
     const [replyTexts, setReplyTexts] = useState<Record<number, string>>({});
@@ -177,7 +182,7 @@ export const VideoPlayerModal = ({ video, onClose }: VideoPlayerModalProps) => {
         >
             <video
                 ref={videoRef}
-                src={formatUrl(video.video_path)!}
+                src={videoUrl || undefined}
                 controls
                 autoPlay
                 playsInline
@@ -240,10 +245,14 @@ export const VideoPlayerModal = ({ video, onClose }: VideoPlayerModalProps) => {
                         onTouchStart={resetNormalControlsTimer}
                         onMouseMove={resetNormalControlsTimer}
                     >
-                        {formatUrl(video.video_path) && !isCustomFullscreen && (
+                        {isLoadingPlayVideo ? (
+                            <div className="w-full h-full flex items-center justify-center">
+                                <Loader2 className="size-8 text-snak-pink animate-spin" />
+                            </div>
+                        ) : videoUrl && !isCustomFullscreen && (
                             <video
                                 ref={videoRef}
-                                src={formatUrl(video.video_path)!}
+                                src={videoUrl || undefined}
                                 controls
                                 autoPlay
                                 playsInline

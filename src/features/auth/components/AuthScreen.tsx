@@ -60,7 +60,7 @@ export const AuthScreen = () => {
         {tabSelected === 'sign' && (
           <p className="mt-6 text-2xl md:text-3xl font-bold text-center leading-snug drop-shadow-lg animate-pulse">
             ¡¡Regístrate, recibirás{' '}
-            <span style={{ color: '#FFD700' }}>10.000</span>{' '}
+            <span style={{ color: '#FFD700' }}>{process.env.NEXT_PUBLIC_COINS || "10.000"}</span>{' '}
             coins de una!!
           </p>
         )}
