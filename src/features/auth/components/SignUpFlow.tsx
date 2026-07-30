@@ -12,7 +12,7 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from '@/components/ui/input-otp';
-import { walletSelectionSchema, emailLinkSchema, verificationCodeSchema, setCredentialsSchema, SignUpWizardValues } from '../schemas/signup.schema';
+import { walletSelectionSchema, emailLinkSchema, verificationCodeSchema, setCredentialsSchema, credentialsStepSchema, SignUpWizardValues } from '../schemas/signup.schema';
 import { useSignUpContext } from '../context';
 import { useSignUpForm } from '../hooks';
 import { trackRegistration } from '@/features/analytics';
@@ -25,7 +25,7 @@ interface SignUpFlowProps {
 const safeZodResolver = (schema: z.ZodType<any, any>) => {
   return async (data: any) => {
     const result = await schema.safeParseAsync(data);
-    
+
     if (result.success) {
       return { values: result.data, errors: {} };
     }
@@ -58,15 +58,15 @@ export const SignUpFlow = ({ onLoginRedirect }: SignUpFlowProps) => {
 
   const signUpMutation = useSignUpForm();
 
-  const totalSteps = 4;
+  const totalSteps = 3;
 
   // Esquemas dinámicos por fase 
   // Ahora usan herencia acumulativa desde signup.schema.ts
+  // Schemas por fase — alineados con el flujo actual de 3 pasos (sin verificación de código)
   const schemas = [
     walletSelectionSchema,
     emailLinkSchema,
-    verificationCodeSchema,
-    setCredentialsSchema,
+    credentialsStepSchema,
   ] as const;
 
   const { control, handleSubmit, watch, setValue, formState: { errors } } = useForm<SignUpWizardValues>({
@@ -99,20 +99,18 @@ export const SignUpFlow = ({ onLoginRedirect }: SignUpFlowProps) => {
         acceptedTerms: data.acceptedTerms!,
       });
     } else if (step === 3) {
-      setVerifyCodeData({
-        walletType: data.walletType,
-        email: data.email!,
-        acceptedTerms: data.acceptedTerms!,
-        verificationCode: data.verificationCode!,
-      });
-    } else if (step === 4) {
+      // setVerifyCodeData({
+      //   walletType: data.walletType,
+      //   email: data.email!,
+      //   acceptedTerms: data.acceptedTerms!,
+      //   verificationCode: data.verificationCode!,
+      // });
       setSetCredentialsData({
         username: data.username!,
         password: data.password!,
         confirmPassword: data.confirmPassword!,
       });
 
-      // Disparar la mutación final de registro
       signUpMutation.mutate(
         {
           username: data.username!,
@@ -127,6 +125,28 @@ export const SignUpFlow = ({ onLoginRedirect }: SignUpFlowProps) => {
         }
       );
     }
+    // else if (step === 4) {
+    //   setSetCredentialsData({
+    //     username: data.username!,
+    //     password: data.password!,
+    //     confirmPassword: data.confirmPassword!,
+    //   });
+
+    //   // Disparar la mutación final de registro
+    //   signUpMutation.mutate(
+    //     {
+    //       username: data.username!,
+    //       email: linkEmailData.email,
+    //       password: data.password!,
+    //     },
+    //     {
+    //       onSuccess: () => {
+    //         // ✅ Evento: Usuario completó el registro
+    //         trackRegistration();
+    //       },
+    //     }
+    //   );
+    // }
 
     if (step < totalSteps) {
       console.log(`Phase ${step} completed:`, data);
@@ -280,7 +300,7 @@ export const SignUpFlow = ({ onLoginRedirect }: SignUpFlowProps) => {
         </form>
       )}
 
-      {step === 3 && (
+      {/* {step === 3 && (
         <form onSubmit={handleSubmit(onNextStep)} className="w-full flex flex-col items-center animate-in fade-in zoom-in-95 duration-300">
           <h2 className="text-[1.35rem] leading-8 font-bold tracking-widest text-center uppercase font-heading px-1">
             Please enter your verification code
@@ -327,9 +347,9 @@ export const SignUpFlow = ({ onLoginRedirect }: SignUpFlowProps) => {
             Request a new code
           </button>
         </form>
-      )}
+      )} */}
 
-      {step === 4 && (
+      {step === 3 && (
         <form onSubmit={handleSubmit(onNextStep)} className="w-full space-y-4 flex flex-col items-center animate-in fade-in zoom-in-95 duration-300">
           <h2 className="text-[1.35rem] leading-8 font-bold tracking-widest text-center uppercase font-heading px-1">
             Create your credentials
@@ -387,9 +407,10 @@ export const SignUpFlow = ({ onLoginRedirect }: SignUpFlowProps) => {
           <div className="w-full pt-6">
             <Button
               type="submit"
-              className="w-full h-14 bg-gradient-to-r from-snak-blue-sky to-snak-blue-aqua rounded-full text-sm font-bold tracking-widest text-white hover:opacity-90 border-0"
+              disabled={signUpMutation.isPending}
+              className="w-full h-14 bg-gradient-to-r from-snak-blue-sky to-snak-blue-aqua rounded-full text-sm font-bold tracking-widest text-white hover:opacity-90 border-0 disabled:opacity-70"
             >
-              FINISH REGISTRATION
+              {signUpMutation.isPending ? 'CREATING USER...' : 'FINISH REGISTRATION'}
             </Button>
           </div>
         </form>
