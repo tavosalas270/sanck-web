@@ -149,7 +149,6 @@ export const SignUpFlow = ({ onLoginRedirect }: SignUpFlowProps) => {
     // }
 
     if (step < totalSteps) {
-      console.log(`Phase ${step} completed:`, data);
       setStep(step + 1);
     }
   };
