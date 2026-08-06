@@ -323,7 +323,16 @@ export const usePostComment = () => {
 export const usePlayVideo = (videoId?: string, enabled: boolean = false) => {
     return useQuery({
         queryKey: ['play-video', videoId],
-        queryFn: () => getPlayVideo(videoId!),
+        queryFn: async () => {
+            try {
+                const response = await getPlayVideo(videoId!);
+                console.log('[usePlayVideo] ✅ Success:', response);
+                return response;
+            } catch (error) {
+                console.error('[usePlayVideo] ❌ Error:', error);
+                throw error;
+            }
+        },
         enabled: !!videoId && enabled,
     });
 };

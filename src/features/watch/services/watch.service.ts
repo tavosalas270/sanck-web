@@ -1,8 +1,8 @@
 'use server';
 
 import { fetchApi } from '../../../utils';
-import { cookies } from 'next/headers';
 import { Videos, Series, Categories, Favorites, UserTokenData, LikeVideoResponse, PostComment, Comments } from '../schemas';
+
 
 export const getSeries = async (page: number = 1): Promise<Series[]> => {
     const response = await fetchApi(`/api/series/?page=${page}`, 'GET');
@@ -150,21 +150,20 @@ export const postCommentService = async (comment: PostComment): Promise<Comments
     return data;
 };
 
-export const getPlayVideo = async (videoId: string): Promise<{id: string, title: string, video_path: string, accessToken?: string}> => {
+export const getPlayVideo = async (videoId: string): Promise<{ videoUrl: string }> => {
+    // Verificamos que el usuario tenga acceso al video (solo leemos el status, no el body).
     const response = await fetchApi(`/api/videos/${videoId}/play/`, 'GET');
+
+    // Cancelamos el body inmediatamente para no descargar el video en el servidor.
+    await response.body?.cancel();
 
     if (!response.ok) {
         throw { status: response.status };
     }
 
-    const data = await response.json();
-    
-    // Obtenemos el token para que el cliente pueda concatenarlo al src del video
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get('access')?.value;
-
+    // Retornamos la URL del proxy interno de Next.js.
+    // El <video> lo consumirá directamente con streaming real (soporte de Range requests).
     return {
-        ...data,
-        accessToken
+        videoUrl: `/api/video-proxy/${videoId}`,
     };
 };

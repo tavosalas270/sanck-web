@@ -24,9 +24,7 @@ export const VideoPlayerModal = ({ video, onClose }: VideoPlayerModalProps) => {
     const { data: userData } = useUserData();
     const { mutate: postComment, isPending: isCommentPending } = usePostComment();
 
-    const videoUrl = playVideoData?.video_path 
-        ? formatUrl(playVideoData.video_path)
-        : "";
+    const videoUrl = playVideoData?.videoUrl ?? "";
 
     const [commentText, setCommentText] = useState("");
     const [replyTexts, setReplyTexts] = useState<Record<number, string>>({});
@@ -213,8 +211,8 @@ export const VideoPlayerModal = ({ video, onClose }: VideoPlayerModalProps) => {
         <>
             {customFullscreenOverlay}
 
-            <Dialog 
-                open={!!video} 
+            <Dialog
+                open={!!video}
                 onOpenChange={(open) => {
                     if (!open) {
                         if (isCustomFullscreen || justExitedFullscreenRef.current) {
@@ -239,7 +237,7 @@ export const VideoPlayerModal = ({ video, onClose }: VideoPlayerModalProps) => {
                     </VisuallyHidden>
 
                     {/* Contenedor del video con botón fullscreen custom */}
-                    <div 
+                    <div
                         className="relative aspect-video w-full flex items-center justify-center bg-black group"
                         onClick={resetNormalControlsTimer}
                         onTouchStart={resetNormalControlsTimer}
