@@ -151,10 +151,10 @@ export const postCommentService = async (comment: PostComment): Promise<Comments
 };
 
 export const getPlayVideo = async (videoId: string): Promise<{ videoUrl: string }> => {
-    // El Route Handler proxy (/api/video-proxy/[videoId]) maneja la autenticación.
-    // Si el usuario no tiene acceso, el proxy retorna 401/403 y el <video> no carga.
-    // No hacemos fetch aquí para evitar el 504 Gateway Timeout en producción.
+    // El Route Handler proxy (/video-proxy/[videoId]) maneja la autenticación.
+    // Se usa /video-proxy/ en vez de /api/video-proxy/ para evitar que el
+    // nginx de producción intercepte la ruta y la envíe al backend Django.
     return {
-        videoUrl: `/api/video-proxy/${videoId}`,
+        videoUrl: `/video-proxy/${videoId}`,
     };
-};
+};
