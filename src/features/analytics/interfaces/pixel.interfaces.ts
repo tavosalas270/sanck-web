@@ -29,6 +29,8 @@ export interface PurchaseEventParams {
 
 export interface ViewContentEventParams {
   content_name?: string;
-  content_ids?: string[];
-  content_type?: string;
+  content_id?: string;          // Requerido por TikTok Pixel (string individual)
+  content_ids?: string[];       // Requerido por Meta Pixel (array)
+  content_type?: 'product' | 'product_group'; // TikTok solo acepta estos valores en eventos estándar
 }
+

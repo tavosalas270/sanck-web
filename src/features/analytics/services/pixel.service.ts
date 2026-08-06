@@ -135,12 +135,14 @@ export const trackVideoView = (
 ): void => {
   const params: ViewContentEventParams = {
     content_name: contentName,
-    content_ids: contentIds,
-    content_type: 'video',
+    content_id: contentIds?.[0],  // TikTok requiere content_id como string
+    content_ids: contentIds,       // Meta requiere content_ids como array
+    content_type: 'product',       // TikTok solo acepta 'product' o 'product_group'
   };
   trackMetaEvent('ViewContent', params as Record<string, unknown>);
   trackTikTokEvent('ViewContent', params as Record<string, unknown>);
 };
+
 
 /**
  * Dispara el evento estándar 'Search' en Meta y TikTok cuando el usuario realiza una búsqueda.
@@ -159,10 +161,16 @@ export const trackSearch = (searchQuery: string): void => {
  * @param contentId - ID del video
  */
 export const trackLike = (contentName?: string, contentId?: string): void => {
-  const params = { content_name: contentName, content_ids: contentId ? [contentId] : [], content_type: 'video' };
+  const params = {
+    content_name: contentName,
+    content_id: contentId,                        // TikTok: string individual
+    content_ids: contentId ? [contentId] : [],    // Meta: array
+    content_type: 'product',
+  };
   trackCustomMetaEvent('LikeVideo', params);
   trackCustomTikTokEvent('LikeVideo', params);
 };
+
 
 /**
  * Dispara el evento custom 'AddFavorite' en Meta y TikTok cuando el usuario agrega un video a favoritos.
@@ -170,10 +178,16 @@ export const trackLike = (contentName?: string, contentId?: string): void => {
  * @param contentId - ID del video
  */
 export const trackFavorite = (contentName?: string, contentId?: string): void => {
-  const params = { content_name: contentName, content_ids: contentId ? [contentId] : [], content_type: 'video' };
+  const params = {
+    content_name: contentName,
+    content_id: contentId,                        // TikTok: string individual
+    content_ids: contentId ? [contentId] : [],    // Meta: array
+    content_type: 'product',
+  };
   trackCustomMetaEvent('AddFavorite', params);
   trackCustomTikTokEvent('AddFavorite', params);
 };
+
 
 /**
  * Dispara el evento custom 'PostComment' en Meta y TikTok cuando el usuario publica un comentario.
@@ -181,7 +195,13 @@ export const trackFavorite = (contentName?: string, contentId?: string): void =>
  * @param contentId - ID del video
  */
 export const trackComment = (contentName?: string, contentId?: string): void => {
-  const params = { content_name: contentName, content_ids: contentId ? [contentId] : [], content_type: 'video' };
+  const params = {
+    content_name: contentName,
+    content_id: contentId,                        // TikTok: string individual
+    content_ids: contentId ? [contentId] : [],    // Meta: array
+    content_type: 'product',
+  };
   trackCustomMetaEvent('PostComment', params);
   trackCustomTikTokEvent('PostComment', params);
 };
+
