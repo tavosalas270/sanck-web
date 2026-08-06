@@ -47,7 +47,6 @@ export async function GET(
     if (contentLength) responseHeaders.set('Content-Length', contentLength);
     if (contentRange) responseHeaders.set('Content-Range', contentRange);
     if (acceptRanges) responseHeaders.set('Accept-Ranges', acceptRanges);
-
     return new NextResponse(backendResponse.body, {
         status: backendResponse.status,
         headers: responseHeaders,
