@@ -151,18 +151,9 @@ export const postCommentService = async (comment: PostComment): Promise<Comments
 };
 
 export const getPlayVideo = async (videoId: string): Promise<{ videoUrl: string }> => {
-    // Verificamos que el usuario tenga acceso al video (solo leemos el status, no el body).
-    const response = await fetchApi(`/api/videos/${videoId}/play/`, 'GET');
-
-    // Cancelamos el body inmediatamente para no descargar el video en el servidor.
-    await response.body?.cancel();
-
-    if (!response.ok) {
-        throw { status: response.status };
-    }
-
-    // Retornamos la URL del proxy interno de Next.js.
-    // El <video> lo consumirá directamente con streaming real (soporte de Range requests).
+    // El Route Handler proxy (/api/video-proxy/[videoId]) maneja la autenticación.
+    // Si el usuario no tiene acceso, el proxy retorna 401/403 y el <video> no carga.
+    // No hacemos fetch aquí para evitar el 504 Gateway Timeout en producción.
     return {
         videoUrl: `/api/video-proxy/${videoId}`,
     };
